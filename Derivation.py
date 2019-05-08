@@ -5,6 +5,7 @@ Created on Tue May  7 15:47:24 2019
 
 @author: corey
 """
+
 ###############################################################################
 # NOTES
 # To get Latex with dots: print(vlatex(L))
@@ -15,7 +16,9 @@ from sympy.physics.vector import time_derivative as dt
 from sympy.physics.vector import dot
 from sympy.physics.vector.printing import vpprint, vlatex
 import numpy as np
-init_vprinting()
+import control
+import matplotlib.pyplot as plt
+physics.vector.init_vprinting()
 
 ###############################################################################
 # DYNAMICS
@@ -23,6 +26,18 @@ init_vprinting()
 # Variable creation
 l1, l2, m1, m2, M, g = symbols('l_1 l_2 m_1 m_2 M g')
 t1, t2, x = vector.dynamicsymbols('theta_1 theta_2 x')
+
+# Constant values for substitution later
+l1n = 5
+l2n = 6
+m1n = 1
+m2n = 1
+Mn  = 2
+gn  = 1
+t10 = 1 # Initial angle
+dt10 = 0
+t20 = 1
+dt20 = 0
 
 # Create reference frame and unit vectors
 N = vector.ReferenceFrame('N')
@@ -92,6 +107,9 @@ for i in range(0,len(outputs)):
         cvals.append(outputs[i].diff(state[j]))
 C = Matrix(len(outputs), len(state), cvals)
 
+# D matrix
+D = np.zeros([int(Cn.shape[0]),1])
+
 # Controllability matrix
 # This is messier than I'd like but it works
 Qi = []
@@ -105,3 +123,84 @@ for i in range(0,len(state)):
 
 Qc = Matrix(len(state), len(state), Qcvals)
 
+
+# Numerical values for the matrices
+nSubs = [(l1,l1n), (l2,l2n), (m1,m1n), (m2,m2n), (M,Mn), (g,gn)]
+
+An = np.array(A.subs(nSubs))
+Bn = np.array(B.subs(nSubs))
+Cn = np.array(C.subs(nSubs))
+Qcn = np.array(Qc.subs(nSubs), dtype='float')
+# Stability check
+if np.linalg.matrix_rank(Qcn) == len(state):
+    print('System is controllable\n')
+else:
+    print('System is uncontrollable\n')
+vector.vprint(Qcn)
+
+# Control system
+ss = control.ss(An,Bn,Cn,D)
+x0 = [t10, dt10, t20, dt20]
+tspan = np.linspace(0,2,1000)
+
+
+# Step response
+#t, yout = control.step_response(ss, tspan, x0)
+#
+#plt.rc('text', usetex=True)
+#plt.plot(t,yout[0], label=r'$\theta_1$')
+#plt.plot(t,yout[1], label=r'$\theta_2$')
+#plt.xlabel(r'Time, t')
+#plt.ylabel(r'Angle, $\theta$')
+#plt.legend(loc='best')
+
+
+# Sin input
+usin = 15*np.cos(tspan*2*np.pi)
+t, yout, xout = control.forced_response(ss, tspan, usin, x0)
+plt.rc('text', usetex=True)
+plt.plot(t,yout[0], label=r'$\theta_1$')
+plt.plot(t,yout[1], label=r'$\theta_2$')
+plt.xlabel(r'Time, t')
+plt.ylabel(r'Angle, $\theta$')
+plt.legend(loc='best')
+
+# Calculate position x
+x = np.zeros(len(tspan))
+v = np.zeros(len(tspan))
+deltat = tspan[1]-tspan[0]
+for i in range(0,len(t)-1):
+    if i == 0:
+        x[i+1] = 0.5*usin[i]*(deltat)**2
+    else:
+        x[i+1] = x[i] +v[i]*deltat + 0.5*usin[i]*(deltat)**2
+        v[i+1] = (x[i+1]-x[i])/deltat
+
+###############################################################################
+# Animation stuff
+###############################################################################
+#f = open("textAn1.py", "w+")
+#f.write("class BasicEquations(Scene):\n" + 
+#"    def construct(self): \n" +
+#"        eq1=TextMobject(\"$\\vec{X}_0 \\cdot \\vec{Y}_1 = 3$\") \n" +
+#"        eq1.shift(2*UP) \n" +
+#"        eq2=TexMobject(r\"\vec{F}_{net} = \sum_i \vec{F}_i\") \n" +
+#"        eq2.shift(2*DOWN) \n" + 
+#"        self.play(Write(eq1))  \n" +
+#"        self.play(Write(eq2))")
+#f.close()
+#Qctext = print(vlatex(Qc))
+        
+from big_ol_pile_of_manim_imports import *
+class BasicEquations(Scene):
+    def construct(self): 
+        eq1=TextMobject(r"$Q_c = \left[\begin{matrix}0 & \frac{1}{l_{1}} & 0 & \frac{M g}{l_{1}^{2} m_{1}}\\\frac{1}{l_{1}} & 0 & \frac{M g}{l_{1}^{2} m_{1}} & 0\\0 & - \frac{1}{l_{2}} & 0 & - \frac{M g}{l_{2}^{2} m_{2}}\\- \frac{1}{l_{2}} & 0 & - \frac{M g}{l_{2}^{2} m_{2}} & 0\end{matrix}\right]$") 
+        eq1.shift(1*UP)
+        eq2=TextMobject(r"$rank(Q_c) = 4$")
+        eq2.shift(1*DOWN)
+        txt1=TextMobject("Therefore it is controllable")	
+        txt1.shift(2*DOWN)
+        self.play(Write(eq1))
+        self.play(Write(eq2))
+        self.play(FadeIn(txt1))
+        self.wait(2)
