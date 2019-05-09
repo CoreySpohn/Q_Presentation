@@ -1,3 +1,2 @@
 file '/home/corey/Documents/GitHub/Q_Presentation/media/videos/animations/480p15/partial_movie_files/CartDemo/00000.mp4'
 file '/home/corey/Documents/GitHub/Q_Presentation/media/videos/animations/480p15/partial_movie_files/CartDemo/00001.mp4'
-file '/home/corey/Documents/GitHub/Q_Presentation/media/videos/animations/480p15/partial_movie_files/CartDemo/00002.mp4'
