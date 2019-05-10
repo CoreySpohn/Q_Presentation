@@ -90,20 +90,44 @@ class CartDemo(Scene):
         cart = VGroup(M, w1, w2)
         p1 = VGroup(m1, rod1)
         p2 = VGroup(m2, rod2)
+        sys = VGroup(cart, p1, p2)
         # Add elements to scene
         self.add(cart, p1, p2)
         self.bring_to_back(rod1, rod2)
-        self.always_continually_update = True
-        
+        rod1.always_continually_update = True
+        print(rod1.points[0]+OUT)
+        print(p1.points)
         movement = 0.2*DOWN
-        self.play(ApplyMethod(cart.move_to, self.relVec(cart, movement)), ApplyMethod(p1.move_to, self.relVec(p1, movement)), ApplyMethod(p2.move_to, self.relVec(p2, movement)))
+#        self.play(ApplyMethod(cart.move_to, self.relVec(cart, movement)), ApplyMethod(p1.move_to, self.relVec(p1, movement)), ApplyMethod(p2.move_to, self.relVec(p2, movement)))
+#        self.play(self.moveSys(sys, 0.2*DOWN), Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
+        self.play(self.moveSys(sys, 0.2*DOWN), Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
 #        self.play(FadeIn(m1), FadeIn(m2), FadeIn(rod1), FadeIn(rod2))
-        self.bring_to_back(rod1, rod2)
+#        self.bring_to_back(rod1, rod2)
+        
+#        self.play(Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
         self.wait(2)
         
-        
+    def getPos(self, obj):
+        objpos = [obj.get_x(), obj.get_y(), obj.get_z()]
+        return objpos
+            
     def relVec(self, obj, pos):
         # generate the vector to move an object to a new position
-        objpos = [obj.get_x(), obj.get_y(), obj.get_z()]
-        return pos+objpos
-            
+        return pos+self.getPos(obj)
+    
+    def rotatePend(self, obj, angle):
+        pass
+    
+    def moveSys(self, sys, x):
+        
+        return ApplyMethod(sys.move_to, self.relVec(sys, x))
+    
+#    class Pendulum(Circle, Line, radius, length, mass, angle, position):
+#        CONFIG = {
+#                "radius": radius,
+#                "fill_color": GREY_1,
+#                "stroke_color": NEON_GREEN,
+#                "fill_opacity": 0.5,
+#                }
+#        def __init__(self, **kwargs):
+#            Circle.__init__(**kwargs)
