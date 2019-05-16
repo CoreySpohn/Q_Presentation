@@ -12,13 +12,15 @@ Created on Tue May  7 15:47:24 2019
 ###############################################################################
 from sympy import *
 from sympy.physics import *
+from sympy.physics import vector
 from sympy.physics.vector import time_derivative as dt
 from sympy.physics.vector import dot
 from sympy.physics.vector.printing import vpprint, vlatex
 import numpy as np
 import control
 import matplotlib.pyplot as plt
-physics.vector.init_vprinting()
+
+vector.init_vprinting()
 
 ###############################################################################
 # DYNAMICS
@@ -86,26 +88,29 @@ stated = [dt(t1,N), t1dd, dt(t2,N), t2dd]
 outputs = [t1, t2]
 inputs = [dt(x,N,2)]
 
+n = len(state)
+m = len(inputs)
+
 # A matrix
 avals = []
-for i in range(0,len(stated)):
-    for j in range(0, len(state)):
+for i in range(0,n):
+    for j in range(0, n):
         avals.append(stated[i].diff(state[j]))
-A = Matrix(len(stated), len(stated), avals)
+A = Matrix(n, n, avals)
     
 # B matrix
 bvals = []
-for i in range(0,len(stated)):
-    for j in range(0, len(inputs)):
+for i in range(0,n):
+    for j in range(0, m):
         bvals.append(stated[i].diff(inputs[j]))
-B = Matrix(len(stated), len(inputs), bvals)
+B = Matrix(n, m, bvals)
 
 # C matrix
 cvals = []
-for i in range(0,len(outputs)):
-    for j in range(0, len(state)):
+for i in range(0,m):
+    for j in range(0, n):
         cvals.append(outputs[i].diff(state[j]))
-C = Matrix(len(outputs), len(state), cvals)
+C = Matrix(m, n, cvals)
 
 # D matrix
 D = np.zeros([int(C.shape[0]),1])
@@ -113,15 +118,15 @@ D = np.zeros([int(C.shape[0]),1])
 # Controllability matrix
 # This is messier than I'd like but it works
 Qi = []
-for i in range(0,len(state)):
+for i in range(0,n):
     Qi.append((A**i * B))
 
 Qcvals = []
-for i in range(0,len(state)):
-    for j in range(0, len(state)):
+for i in range(0,n):
+    for j in range(0, n):
         Qcvals.append(Qi[j][i])
 
-Qc = Matrix(len(state), len(state), Qcvals)
+Qc = Matrix(n, n, Qcvals)
 
 
 # Numerical values for the matrices
@@ -132,14 +137,14 @@ Bn = np.array(B.subs(nSubs))
 Cn = np.array(C.subs(nSubs))
 Qcn = np.array(Qc.subs(nSubs), dtype='float')
 # Stability check
-if np.linalg.matrix_rank(Qcn) == len(state):
+if np.linalg.matrix_rank(Qcn) == n:
     print('System is controllable\n')
 else:
     print('System is uncontrollable\n')
 vector.vprint(Qcn)
 
 # Control system
-ss = control.ss(An,Bn,Cn,D)
+sys = control.StateSpace(An,Bn,Cn,D)
 x0 = [t10, dt10, t20, dt20]
 tspan = np.linspace(0,2,1000)
 
@@ -157,10 +162,10 @@ tspan = np.linspace(0,2,1000)
 
 # Sin input
 usin = 15*np.cos(tspan*2*np.pi)
-t, yout, xout = control.forced_response(ss, tspan, usin, x0)
+t, yout, xout = control.forced_response(sys, tspan, usin, x0)
 plt.rc('text', usetex=True)
-plt.plot(t,yout[0], label=r'$\theta_1$')
-plt.plot(t,yout[1], label=r'$\theta_2$')
+plt.plot(t, xout[0], label=r'$\theta_1$')
+plt.plot(t, xout[2], label=r'$\theta_2$')
 plt.xlabel(r'Time, t')
 plt.ylabel(r'Angle, $\theta$')
 plt.legend(loc='best')
@@ -175,6 +180,14 @@ for i in range(0,len(t)-1):
     else:
         x[i+1] = x[i] +v[i]*deltat + 0.5*usin[i]*(deltat)**2
         v[i+1] = (x[i+1]-x[i])/deltat
+
+# Control with LQR
+# Starting with just Q = R = I
+Q = np.eye(n)
+R = np.eye(m)
+#K, S, E = control.lqr(sys, Q, R)
+print('Anything')
+
 
 ###############################################################################
 # Animation stuff
