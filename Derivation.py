@@ -26,12 +26,12 @@ vector.init_vprinting()
 # DYNAMICS
 ###############################################################################
 # Variable creation
-l1, l2, m1, m2, M, g = symbols('l_1 l_2 m_1 m_2 M g')
+l1, l2, m1, m2, M, g, u = symbols('l_1 l_2 m_1 m_2 M g u')
 t1, t2, x = vector.dynamicsymbols('theta_1 theta_2 x')
 
 # Constant values for substitution later
 l1n = 5
-l2n = 6
+l2n = 1
 m1n = 1
 m2n = 1
 Mn  = 2
@@ -40,6 +40,8 @@ t10 = 1 # Initial angle
 dt10 = 0
 t20 = 1
 dt20 = 0
+x10 = 0
+dx10 = 0
 
 # Create reference frame and unit vectors
 N = vector.ReferenceFrame('N')
@@ -60,36 +62,43 @@ v2 = dt(r2,N)
 
 # Kinetic and potential energies
 T = (1/2)*M*dot(dt(x*N.x,N),dt(x*N.x,N)) + (1/2)*m1*dot(v1,v1) + (1/2)*m2*dot(v2,v2)
-U = M*g*(l1*cos(t1)+l2*cos(t2))
+U = g*(m1*l1*cos(t1)+m2*l2*cos(t2))
 
 # Lagrangian
 L = T-U
+F = u*N.x
+rf = x*N.x
 
 # Equations of motion
-eqx = dt(L.diff(dt(x,N)),N)-L.diff(x)
-eqt1 = dt(L.diff(dt(t1,N)),N)-L.diff(t1)
-eqt2 = dt(L.diff(dt(t2,N)),N)-L.diff(t2)
+eqx = dt(L.diff(dt(x,N)),N)-L.diff(x)-dot(rf.diff(x,N),F)
+eqt1 = dt(L.diff(dt(t1,N)),N)-L.diff(t1) - dot(rf.diff(t1,N),F)
+eqt2 = dt(L.diff(dt(t2,N)),N)-L.diff(t2) - dot(rf.diff(t2,N),F)
 
 # Solve for variables
-xdd = solve(eqx,dt(x,N,2))
-t1dd = solve(eqt1,dt(t1,N,2))
-t2dd = solve(eqt2,dt(t2,N,2))
+sol = solve([eqx, eqt1, eqt2],[dt(x,N,2), dt(t1,N,2), dt(t2,N,2)], dict=True)
+xdd = sol[0][dt(x,N,2)]
+t1dd = sol[0][dt(t1,N,2)]
+t2dd = sol[0][dt(t2,N,2)]
 
 # Linearize
-xdd = xdd[0].subs([(sin(t1),t1), (cos(t1),1), (sin(t2),t2), (cos(t2), 1)])
-t1dd = t1dd[0].subs([(sin(t1),t1), (cos(t1),1), (sin(t2),t2), (cos(t2), 1)])
-t2dd = t2dd[0].subs([(sin(t1),t1), (cos(t1),1), (sin(t2),t2), (cos(t2), 1)])
+lsubs = [(sin(t1),t1), (sin(2.0*t1),2*t1), (cos(t1),1), (sin(t2),t2), 
+         (sin(2.0*t2),2*t2), (cos(t2), 1), (t1*t1, 0), (t1*t2, 0), (t2*t2, 0),
+         (dt(t1,N)*dt(t1,N), 0), (dt(t2,N)*dt(t2,N), 0)]
+xdd = expand_trig(xdd).subs(lsubs)
+t1dd = expand_trig(t1dd).subs(lsubs)
+t2dd = expand_trig(t2dd).subs(lsubs)
 
 ###############################################################################
 # CONTROLS
 ###############################################################################
-state = [t1, dt(t1,N), t2, dt(t2,N)]
-stated = [dt(t1,N), t1dd, dt(t2,N), t2dd]
-outputs = [t1, t2]
-inputs = [dt(x,N,2)]
+state = [x, dt(x,N), t1, dt(t1,N), t2, dt(t2,N)]
+stated = [dt(x,N), xdd, dt(t1,N), t1dd, dt(t2,N), t2dd]
+outputs = [x, t1, t2]
+inputs = [u]
 
 n = len(state)
 m = len(inputs)
+p = len(outputs)
 
 # A matrix
 avals = []
@@ -98,7 +107,7 @@ for i in range(0,n):
         avals.append(stated[i].diff(state[j]))
 A = Matrix(n, n, avals)
     
-# B matrix
+# B matrixu
 bvals = []
 for i in range(0,n):
     for j in range(0, m):
@@ -107,10 +116,10 @@ B = Matrix(n, m, bvals)
 
 # C matrix
 cvals = []
-for i in range(0,m):
+for i in range(0,p):
     for j in range(0, n):
         cvals.append(outputs[i].diff(state[j]))
-C = Matrix(m, n, cvals)
+C = Matrix(p, n, cvals)
 
 # D matrix
 D = np.zeros([int(C.shape[0]),1])
@@ -144,9 +153,9 @@ else:
 vector.vprint(Qcn)
 
 # Control system
-sys = control.StateSpace(An,Bn,Cn,D)
-x0 = [t10, dt10, t20, dt20]
-tspan = np.linspace(0,2,1000)
+sys = control.ss(An,Bn,Cn,D)
+x0 = [x10, dx10, t10, dt10, t20, dt20]
+tspan = np.linspace(0,5,1000)
 
 
 # Step response
@@ -161,33 +170,47 @@ tspan = np.linspace(0,2,1000)
 
 
 # Sin input
-usin = 15*np.cos(tspan*2*np.pi)
-t, yout, xout = control.forced_response(sys, tspan, usin, x0)
-plt.rc('text', usetex=True)
-plt.plot(t, xout[0], label=r'$\theta_1$')
-plt.plot(t, xout[2], label=r'$\theta_2$')
-plt.xlabel(r'Time, t')
-plt.ylabel(r'Angle, $\theta$')
-plt.legend(loc='best')
+#usin = 15*np.cos(tspan*2*np.pi)
+#t, yout, xout = control.forced_response(sys, tspan, usin, x0)
+#plt.rc('text', usetex=True)
+#plt.plot(t, xout[0], label=r'$\theta_1$')
+#plt.plot(t, xout[2], label=r'$\theta_2$')
+#plt.xlabel(r'Time, t')
+#plt.ylabel(r'Angle, $\theta$')
+#plt.legend(loc='best')
 
 # Calculate position x
-x = np.zeros(len(tspan))
-v = np.zeros(len(tspan))
-deltat = tspan[1]-tspan[0]
-for i in range(0,len(t)-1):
-    if i == 0:
-        x[i+1] = 0.5*usin[i]*(deltat)**2
-    else:
-        x[i+1] = x[i] +v[i]*deltat + 0.5*usin[i]*(deltat)**2
-        v[i+1] = (x[i+1]-x[i])/deltat
+#x = np.zeros(len(tspan))
+#v = np.zeros(len(tspan))
+#deltat = tspan[1]-tspan[0]
+#for i in range(0,len(t)-1):
+#    if i == 0:
+#        x[i+1] = 0.5*usin[i]*(deltat)**2
+#    else:
+#        x[i+1] = x[i] +v[i]*deltat + 0.5*usin[i]*(deltat)**2
+#        v[i+1] = (x[i+1]-x[i])/deltat
 
 # Control with LQR
 # Starting with just Q = R = I
-Q = np.eye(n)
+Q = np.dot(np.transpose(Cn), Cn)
 R = np.eye(m)
-#K, S, E = control.lqr(sys, Q, R)
+K, S, E = control.lqr(sys, Q, R)
 print('Anything')
 
+Ac = An-Bn*K
+
+x0 = [x10, dx10, t10, dt10, t20, dt20]
+tspan = np.linspace(0,20,1000)
+
+sysc = control.ss(Ac,Bn,Cn,D)
+tc, youtc, xoutc = control.impulse_response(sysc, tspan, x0, return_x=True)
+plt.rc('text', usetex=True)
+#plt.plot(tc, xoutc[0], label=r'$x$')
+plt.plot(tc, xoutc[2], label=r'$\theta_1$')
+plt.plot(tc, xoutc[4], label=r'$\theta_2$')
+plt.xlabel(r'Time, t')
+plt.ylabel(r'Angle, $\theta$')
+plt.legend(loc='best')
 
 ###############################################################################
 # Animation stuff
