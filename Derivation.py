@@ -26,22 +26,8 @@ vector.init_vprinting()
 # DYNAMICS
 ###############################################################################
 # Variable creation
-l1, l2, m1, m2, M, g, u = symbols('l_1 l_2 m_1 m_2 M g u')
+l, l1, l2, m, m1, m2, M, g, u = symbols('l l_1 l_2 m m_1 m_2 M g u')
 t1, t2, x = vector.dynamicsymbols('theta_1 theta_2 x')
-
-# Constant values for substitution later
-l1n = 5
-l2n = 1
-m1n = 1
-m2n = 1
-Mn  = 2
-gn  = 1
-t10 = 1 # Initial angle
-dt10 = 0
-t20 = 1
-dt20 = 0
-x10 = 0
-dx10 = 0
 
 # Create reference frame and unit vectors
 N = vector.ReferenceFrame('N')
@@ -61,7 +47,7 @@ v1 = dt(r1,N)
 v2 = dt(r2,N)
 
 # Kinetic and potential energies
-T = (1/2)*M*dot(dt(x*N.x,N),dt(x*N.x,N)) + (1/2)*m1*dot(v1,v1) + (1/2)*m2*dot(v2,v2)
+T = trigsimp((1/2)*M*dot(dt(x*N.x,N),dt(x*N.x,N)) + (1/2)*m1*dot(v1,v1) + (1/2)*m2*dot(v2,v2))
 U = g*(m1*l1*cos(t1)+m2*l2*cos(t2))
 
 # Lagrangian
@@ -83,7 +69,7 @@ t2dd = sol[0][dt(t2,N,2)]
 # Linearize
 lsubs = [(sin(t1),t1), (sin(2.0*t1),2*t1), (cos(t1),1), (sin(t2),t2), 
          (sin(2.0*t2),2*t2), (cos(t2), 1), (t1*t1, 0), (t1*t2, 0), (t2*t2, 0),
-         (dt(t1,N)*dt(t1,N), 0), (dt(t2,N)*dt(t2,N), 0)]
+         (dt(t1,N)*dt(t1,N), 0), (dt(t2,N)*dt(t2,N), 0), (1.0,1)]
 xdd = expand_trig(xdd).subs(lsubs)
 t1dd = expand_trig(t1dd).subs(lsubs)
 t2dd = expand_trig(t2dd).subs(lsubs)
@@ -135,15 +121,29 @@ for i in range(0,n):
     for j in range(0, n):
         Qcvals.append(Qi[j][i])
 
-Qc = Matrix(n, n, Qcvals)
+Qc = simplify(Matrix(n, n, Qcvals))
 
+# Conditions for stability
+l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
+l1n = 1
+l2n = 1
+m1n = 5
+m2n = 1
+Mn  = 5
+gn  = 1
+t10 = 1 # Initial angle
+dt10 = 0
+t20 = 1
+dt20 = 0
+x10 = 0
+dx10 = 0
 nSubs = [(l1,l1n), (l2,l2n), (m1,m1n), (m2,m2n), (M,Mn), (g,gn)]
 
-An = np.array(A.subs(nSubs))
-Bn = np.array(B.subs(nSubs))
-Cn = np.array(C.subs(nSubs))
+An = np.array(A.subs(nSubs)).astype(float)
+Bn = np.array(B.subs(nSubs)).astype(float)
+Cn = np.array(C.subs(nSubs)).astype(float)
 Qcn = np.array(Qc.subs(nSubs), dtype='float')
 # Stability check
 if np.linalg.matrix_rank(Qcn) == n:
@@ -205,7 +205,7 @@ tspan = np.linspace(0,20,1000)
 sysc = control.ss(Ac,Bn,Cn,D)
 tc, youtc, xoutc = control.impulse_response(sysc, tspan, x0, return_x=True)
 plt.rc('text', usetex=True)
-#plt.plot(tc, xoutc[0], label=r'$x$')
+plt.plot(tc, xoutc[0], label=r'$x$')
 plt.plot(tc, xoutc[2], label=r'$\theta_1$')
 plt.plot(tc, xoutc[4], label=r'$\theta_2$')
 plt.xlabel(r'Time, t')
