@@ -180,8 +180,9 @@ class Dynamics(Scene):
         t2ddLRHS = TexMobject(r"\frac{- g m_{1} \theta_{1} + g \left(M + m_{2}\right) \theta_{2} - u}{M l_{2}}")
         t2ddLRHS.next_to(t2ddLHS,RIGHT)
         t2ddL = VGroup(t2ddLHS, t2ddLRHS)
-        
-        self.play(ReplacementTransform(xddRHS,xddLRHS), ReplacementTransform(t1ddRHS,t1ddLRHS), ReplacementTransform(t2ddRHS,t2ddLRHS))
+#        self.remove(xdd, t1dd, t2dd)
+        self.play(TransformFromCopy(xdd,xddL), TransformFromCopy(t1dd,t1ddL), TransformFromCopy(t2dd,t2ddL),
+                  ApplyMethod(xdd.remove), ApplyMethod(t1dd.remove), ApplyMethod(t2dd.remove))
         
         self.wait(1)
         
