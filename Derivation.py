@@ -70,15 +70,15 @@ t2dd = sol[0][dt(t2,N,2)]
 lsubs = [(sin(t1),t1), (sin(2.0*t1),2*t1), (cos(t1),1), (sin(t2),t2), 
          (sin(2.0*t2),2*t2), (cos(t2), 1), (t1*t1, 0), (t1*t2, 0), (t2*t2, 0),
          (dt(t1,N)*dt(t1,N), 0), (dt(t2,N)*dt(t2,N), 0), (1.0,1)]
-xdd = expand_trig(xdd).subs(lsubs)
-t1dd = expand_trig(t1dd).subs(lsubs)
-t2dd = expand_trig(t2dd).subs(lsubs)
+xddL = expand_trig(xdd).subs(lsubs) # Lienarized solutions
+t1ddL = expand_trig(t1dd).subs(lsubs)
+t2ddL = expand_trig(t2dd).subs(lsubs)
 
 ###############################################################################
 # CONTROLS
 ###############################################################################
 state = [x, dt(x,N), t1, dt(t1,N), t2, dt(t2,N)]
-stated = [dt(x,N), xdd, dt(t1,N), t1dd, dt(t2,N), t2dd]
+stated = [dt(x,N), xddL, dt(t1,N), t1ddL, dt(t2,N), t2ddL]
 outputs = [x, t1, t2]
 inputs = [u]
 
@@ -122,6 +122,19 @@ for i in range(0,n):
         Qcvals.append(Qi[j][i])
 
 Qc = simplify(Matrix(n, n, Qcvals))
+
+# Observability matrix
+# This is messier than I'd like but it works
+Qio = []
+for i in range(0,n):
+    Qio.append((C * A**i))
+
+Qovals = []
+for i in range(0,n):
+    for j in range(0, n):
+        Qovals.append(Qio[j][i])
+
+Qo = simplify(Matrix(n, n, Qovals))
 
 # Conditions for stability
 l1stabcond = solve(Qc.det(),l1)[0]
