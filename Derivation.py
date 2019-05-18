@@ -141,7 +141,7 @@ l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
 l1n = 1
-l2n = 1
+l2n = 2
 m1n = 5
 m2n = 1
 Mn  = 5
@@ -158,6 +158,8 @@ An = np.array(A.subs(nSubs)).astype(float)
 Bn = np.array(B.subs(nSubs)).astype(float)
 Cn = np.array(C.subs(nSubs)).astype(float)
 Qcn = np.array(Qc.subs(nSubs), dtype='float')
+Qon = np.array(Qo.subs(nSubs), dtype='float')
+
 # Stability check
 if np.linalg.matrix_rank(Qcn) == n:
     print('System is controllable\n')
@@ -205,7 +207,7 @@ tspan = np.linspace(0,5,1000)
 
 # Control with LQR
 # Starting with just Q = R = I
-Q = np.dot(np.transpose(Cn), Cn)
+Q = 100*np.dot(np.transpose(Cn), Cn)
 R = np.eye(m)
 K, S, E = control.lqr(sys, Q, R)
 print('Anything')
@@ -215,7 +217,7 @@ Ac = An-Bn*K
 x0 = [x10, dx10, t10, dt10, t20, dt20]
 tspan = np.linspace(0,20,1000)
 
-sysc = control.ss(Ac,Bn,Cn,D)
+sysc = control.ss(Ac,Bn,Cn,D) 
 tc, youtc, xoutc = control.impulse_response(sysc, tspan, x0, return_x=True)
 plt.rc('text', usetex=True)
 plt.plot(tc, xoutc[0], label=r'$x$')
@@ -224,6 +226,7 @@ plt.plot(tc, xoutc[4], label=r'$\theta_2$')
 plt.xlabel(r'Time, t')
 plt.ylabel(r'Angle, $\theta$')
 plt.legend(loc='best')
+plt.savefig('Ctrl.png', dpi=300)
 
 ###############################################################################
 # Animation stuff

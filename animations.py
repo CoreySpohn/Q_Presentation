@@ -17,7 +17,7 @@ class ControllabilityMatrix(Scene):
 
 class Dynamics(Scene):
     def construct(self):
-#        self.energy2L()
+        self.energy2L()
         self.l2EOM()
         
     def energy2L(self):
@@ -101,6 +101,7 @@ class Dynamics(Scene):
         self.play(ApplyMethod(Lgroup.scale,0.75), ApplyMethod(Leq3.scale,0.75))
         self.play(ApplyMethod(Lgroup.to_corner,UP+LEFT))
         self.play(Leq3.next_to,Lgroup,RIGHT)
+        self.wait(1)
         
         # Generalized coordinates
         qall = TexMobject(r"q=(x, \theta_1, \theta_2)")
@@ -132,14 +133,18 @@ class Dynamics(Scene):
         t2eq.next_to(qt2, RIGHT)
         
         self.play(Write(qall))
+        self.wait(1)
         self.play(TransformFromCopy(qall, qx), TransformFromCopy(qall, qt1), TransformFromCopy(qall, qt2))
+        self.wait(1)
         
         self.play(Write(xeq), Write(t1eq), Write(t2eq))
-        self.wait(0.5)
+        self.wait(1)
         
         
         
         # Equations of motion
+#        xdd = TexMobject(r"\ddot{x} = \frac{0.5 g m_{1} \operatorname{sin}\left(2\theta_{1}\right) - 0.5 g m_{2} \operatorname{sin}\left(2\theta_{2}\right) - l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u}{M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)}")
+#        xdd.scale(0.45)
         xddLHS = TexMobject(r"\ddot{x} = ")
         xddRHS = TexMobject(r"\frac{0.5 g m_{1} \operatorname{sin}\left(2\theta_{1}\right) - 0.5 g m_{2} \operatorname{sin}\left(2\theta_{2}\right) - l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u}{M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)}")
         xddRHS.scale(0.45)
@@ -165,27 +170,46 @@ class Dynamics(Scene):
         t2dd.next_to(t1dd, DOWN)
         
         self.play(FadeOutAndShift(qall,UP), FadeOutAndShift(qx, LEFT), FadeOutAndShift(qt1,LEFT), FadeOutAndShift(qt2,LEFT),
-                  Transform(xeq,xdd), Transform(t1eq,t1dd), Transform(t2eq,t2dd))
+                  ReplacementTransform(xeq,xdd), ReplacementTransform(t1eq,t1dd), ReplacementTransform(t2eq,t2dd))
+        self.wait(1)
         
         # Linearize that stuff!
         
-        xddLRHS = TexMobject(r"\frac{g m_{1} \theta_{1} - g m_{2} \theta_{2} + u}{M}")
-        xddLRHS.next_to(xddLHS, RIGHT)
-        xddL = VGroup(xddLHS, xddLRHS)
+        xddL = TexMobject(r"\ddot{x} = \frac{g m_{1} \theta_{1} - g m_{2} \theta_{2} + u}{M}")
         
-        t1ddLRHS = TexMobject(r"\frac{- g m_{2} \theta_{2} + g \left(M + m_{1}\right) \theta_{1} + u}{M l_{1}}")
-        t1ddLRHS.next_to(t1ddLHS,RIGHT)
-        t1ddL = VGroup(t1ddLHS, t1ddLRHS)
+        t1ddL  = TexMobject(r"\ddot{\theta_1} = \frac{- g m_{2} \theta_{2} + g \left(M + m_{1}\right) \theta_{1} + u}{M l_{1}}")
         
-        t2ddLRHS = TexMobject(r"\frac{- g m_{1} \theta_{1} + g \left(M + m_{2}\right) \theta_{2} - u}{M l_{2}}")
-        t2ddLRHS.next_to(t2ddLHS,RIGHT)
-        t2ddL = VGroup(t2ddLHS, t2ddLRHS)
-#        self.remove(xdd, t1dd, t2dd)
-        self.play(TransformFromCopy(xdd,xddL), TransformFromCopy(t1dd,t1ddL), TransformFromCopy(t2dd,t2ddL),
-                  ApplyMethod(xdd.remove), ApplyMethod(t1dd.remove), ApplyMethod(t2dd.remove))
+        t2ddL = TexMobject(r"\ddot{\theta_2} = \frac{- g m_{1} \theta_{1} + g \left(M + m_{2}\right) \theta_{2} - u}{M l_{2}}")
+        
+        t1ddL.center
+        t1ddL.shift(1*DOWN)
+        xddL.next_to(t1ddL, UP)
+        t2ddL.next_to(t1ddL, DOWN)
+        
+        self.play(ReplacementTransform(xdd,xddL), ReplacementTransform(t1dd,t1ddL), ReplacementTransform(t2dd,t2ddL))
+        
+        # Break point for the controls section
+        self.play(FadeOutAndShift(Lgroup, UP), FadeOutAndShift(Leq3, UP), ApplyMethod(xddL.to_edge, UP), MaintainPositionRelativeTo(t1ddL, xddL), MaintainPositionRelativeTo(t2ddL, xddL))
         
         self.wait(1)
+
+class Controls(Scene):
+    def construct(self):
+        self.stateSpace()
         
+    def stateSpace(self):
+        xddL = TexMobject(r"\ddot{x} = \frac{g m_{1} \theta_{1} - g m_{2} \theta_{2} + u}{M}")
+        t1ddL  = TexMobject(r"\ddot{\theta_1} = \frac{- g m_{2} \theta_{2} + g \left(M + m_{1}\right) \theta_{1} + u}{M l_{1}}")
+        t2ddL = TexMobject(r"\ddot{\theta_2} = \frac{- g m_{1} \theta_{1} + g \left(M + m_{2}\right) \theta_{2} - u}{M l_{2}}")
+        
+        xddL.to_edge(UP)
+        t1ddL.next_to(xddL, DOWN)
+        t2ddL.next_to(t1ddL, DOWN)
+        
+        
+        
+    def controllability(self):
+        pass
         
 class CartDemo(Scene):
     def construct(self):
