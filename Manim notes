@@ -1,0 +1,4 @@
+Random notes
+mobject.stretch(n, m)
+	n = stretch factor
+	m = dimension to stretch (0 = x, 1 = y, 2 = z)
