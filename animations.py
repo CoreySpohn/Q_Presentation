@@ -197,7 +197,8 @@ class Controls(Scene):
     def construct(self):
 #        self.stateSpace()
 #        self.controllability()
-        self.observability()
+#        self.observability()
+        self.LQR()
         
     def stateSpace(self):
         xddL = TexMobject(r"\ddot{x} \,", r"= \frac{g m_{1} \theta_{1} - g m_{2} \theta_{2} + u}{M}")
@@ -414,64 +415,109 @@ class Controls(Scene):
         ##
         AandC = TexMobject(r'A = ', r'\left[\begin{matrix}0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & - \frac{g m_{2}}{M} & 0\\0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & \frac{g \left(M + m_{1}\right)}{M l_{1}} & 0 & - \frac{g m_{2}}{M l_{1}} & 0\\0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & - \frac{g m_{1}}{M l_{2}} & 0 & \frac{g \left(M + m_{2}\right)}{M l_{2}} & 0\end{matrix}\right]',
                            r'C = ', r'\left[\begin{matrix}1 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 1 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 1 & 0\end{matrix}\right]')
-        
+        AandC.scale(0.75)
         self.play(Write(AandC))
         self.play(AandC.to_edge, UP)
-#        Qoexpr = TexMobject(r'Q_o', r'=', r'\left[ C \quad C A \quad C A^2 \quad C A^3 \quad C A^4 \quad C A^5 \right]')
-#        Qoexpr.next_to(noctrlgroup, DOWN)
-##        self.play(Write(Qoexpr))
-#        
-#        Qo = TexMobject(r'\operatorname{det}Q_0, ',r'=', r' \frac{g^{6} m_{1}^{2} m_{2}^{2} \left(l_{1} - l_{2}\right)^{2}}{M^{4} l_{1}^{2} l_{2}^{2}}')
-#        Qoexpr.next_to(A, DOWN)
-#        self.play(Write(Qoexpr))
-#        self.wait(1)
-#        
-#        self.play(
-#                FadeOutAndShift(A, UP),
-#                FadeOutAndShift(B, UP),
-#                Qoexpr.to_edge, UP)
-#        self.wait(1)
-#        
-#        # Actual Qo
-#        Qo = TexMobject(r'Q_o', r'=', r'\left[\begin{matrix}1 & 0 & 0 & 0 & 0 & 0\\0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & \frac{g^{2} m_{1} \left(l_{1} m_{2} + l_{2} \left(M + m_{1}\right)\right)}{M^{2} l_{1} l_{2}} & 0\\0 & 0 & 0 & \frac{g m_{1}}{M} & 0 & \frac{g^{2} m_{1} \left(l_{1} m_{2} + l_{2} \left(M + m_{1}\right)\right)}{M^{2} l_{1} l_{2}}\\0 & 0 & - \frac{g m_{2}}{M} & 0 & - \frac{g^{2} m_{2} \left(l_{1} \left(M + m_{2}\right) + l_{2} m_{1}\right)}{M^{2} l_{1} l_{2}} & 0\\0 & 0 & 0 & - \frac{g m_{2}}{M} & 0 & - \frac{g^{2} m_{2} \left(l_{1} \left(M + m_{2}\right) + l_{2} m_{1}\right)}{M^{2} l_{1} l_{2}}\end{matrix}\right]')
-#        Qo.scale(0.35)
-#        Qo.stretch(1.5,1)
-#        self.play(Write(Qo))
-#        
-#        # Determinant of Qo
-#        QoBrace = Brace(Qo[2],DOWN)
-#        detQo = TexMobject(r'\operatorname{det}Q_o', r'=', r'\frac{g^{6} m_{1}^{2} m_{2}^{2} \left(l_{1} - l_{2}\right)^{2}}{M^{4} l_{1}^{2} l_{2}^{2}}')
-#        detQo.next_to(QoBrace, DOWN)
-#        self.play(GrowFromCenter(QoBrace), Write(detQo))
-#        
-#        # observeability condition
-#        noobs = TexMobject(r'\operatorname{if}\ ', r'l_1', r'=', r'l_2')
-#        noobs.next_to(detQo, LEFT)
-#        detQo0 = TexMobject(r'0')
-#        detQo0.next_to(detQo[1],RIGHT)
-#        self.play(Write(noobs))
-#        
-#        self.play(Transform(detQo[2], detQo0))
-#        self.remove(detQo[2])
-#        noobsgroup = VGroup(noobs, detQo0, detQo[0], detQo[1])
-#        
-#        self.play(
-#                FadeOutAndShift(Qo, UP),
-#                FadeOutAndShift(QoBrace, UP),
-#                FadeOutAndShift(Qoexpr, UP),
-#                noobsgroup.center)
-#        
-#        # State explicitly that it's unobserveable
-##        obscopy = noobsgroup.copy()
-#        noobs2 = TexMobject(r'\operatorname{if}\ ', r'\operatorname{det}Q_o', r'=', r'0')
-#        self.play(noobsgroup.shift,1*UP)
-#        noobs2.next_to(noobsgroup,DOWN)
-#        self.play(TransformFromCopy(noobsgroup, noobs2))
-#        obsstatement = TextMobject(r'The system is unobserveable')
-#        obsstatement.next_to(noobs2, DOWN)
-#        self.play(Write(obsstatement))
+        Qoexpr = TexMobject(r'Q_o', r'=', r'\left[ C \quad C A \quad C A^2 \quad C A^3 \quad C A^4 \quad C A^5 \right]')
+        Qoexpr.next_to(AandC, DOWN)
+        self.play(Write(Qoexpr))
+        self.wait(0.5)
+        
+        Qo = TexMobject(r'Q_0',r'=', r' \left[\begin{matrix}1 & 0 & 0 & 0 & 0 & 0\\0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & \frac{g^{2} m_{1} \left(l_{1} m_{2} + l_{2} \left(M + m_{1}\right)\right)}{M^{2} l_{1} l_{2}} & 0\\0 & 0 & 0 & \frac{g m_{1}}{M} & 0 & \frac{g^{2} m_{1} \left(l_{1} m_{2} + l_{2} \left(M + m_{1}\right)\right)}{M^{2} l_{1} l_{2}}\\0 & 0 & - \frac{g m_{2}}{M} & 0 & - \frac{g^{2} m_{2} \left(l_{1} \left(M + m_{2}\right) + l_{2} m_{1}\right)}{M^{2} l_{1} l_{2}} & 0\\0 & 0 & 0 & - \frac{g m_{2}}{M} & 0 & - \frac{g^{2} m_{2} \left(l_{1} \left(M + m_{2}\right) + l_{2} m_{1}\right)}{M^{2} l_{1} l_{2}}\end{matrix}\right]')
+        Qo.scale(0.75)
+        self.play(
+                FadeOutAndShift(AandC, UP),
+                Qoexpr.to_edge, UP,
+                TransformFromCopy(Qoexpr, Qo))
+        self.wait(1)
+
+        
+        # Determinant of Qo
+        QoBrace = Brace(Qo[2],DOWN)
+        detQo = TexMobject(r'\operatorname{det}Q_o', r'=', r'\frac{g^{6} m_{1}^{2} m_{2}^{2} \left(l_{1} - l_{2}\right)^{2}}{M^{4} l_{1}^{2} l_{2}^{2}}')
+        detQo.next_to(QoBrace, DOWN)
+        self.play(GrowFromCenter(QoBrace), Write(detQo))
+        
+        # observeability condition
+        noobs = TexMobject(r'\operatorname{if}\ ', r'l_1', r'=', r'l_2')
+        noobs.next_to(detQo, LEFT)
+        detQo0 = TexMobject(r'0')
+        detQo0.next_to(detQo[1],RIGHT)
+        self.play(Write(noobs))
+        
+        self.play(Transform(detQo[2], detQo0))
+        self.remove(detQo[2])
+        noobsgroup = VGroup(noobs, detQo0, detQo[0], detQo[1])
+        
+        self.play(
+                FadeOutAndShift(Qo, UP),
+                FadeOutAndShift(QoBrace, UP),
+                FadeOutAndShift(Qoexpr, UP),
+                noobsgroup.center)
+        
+        # State explicitly that it's unobserveable
+#        obscopy = noobsgroup.copy()
+        noobs2 = TexMobject(r'\operatorname{if}\ ', r'\operatorname{det}Q_o', r'=', r'0')
+        self.play(noobsgroup.shift,1*UP)
+        noobs2.next_to(noobsgroup,DOWN)
+        self.play(TransformFromCopy(noobsgroup, noobs2))
+        obsstatement = TextMobject(r'The system is unobserveable')
+        obsstatement.next_to(noobs2, DOWN)
+        self.play(Write(obsstatement))
+        self.play(FadeOut(obsstatement),
+                  FadeOut(noobs2),
+                  FadeOut(noobsgroup))
+        
+    def LQR(self):
+        lqrexpr = TexMobject(r'J = ', r'\int_0^\infty (  ', r'z^T', r'Q' ,r'z', r'+', r'u^T', r'R', ' u', r' ) dt')
+        lqrexpr.to_edge(UP)
+        self.play(Write(lqrexpr))
         
         
+        z = TexMobject(r"z = ", r"\left[\begin{matrix} x \\ \dot{x} \\ \theta_1 \\ \dot{\theta_1} \\ \theta_2 \\ \dot{\theta_2} \end{matrix}\right]")
+        z.to_edge(LEFT)
+        self.play(TransformFromCopy(lqrexpr[4], z))
+        
+        
+        Q = TexMobject(r'Q', r'=', r'\rho', r'\left[\begin{matrix}0.1 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 1 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 1 & 0\\0 & 0 & 0 & 0 & 0 & 0\end{matrix}\right]')
+        self.play(TransformFromCopy(lqrexpr[3], Q))
+        
+        R = TexMobject(r'R', '=', r'\mu')
+        R.to_edge(RIGHT)
+        self.play(TransformFromCopy(lqrexpr[7], R))
+        
+        rhoval = TexMobject(r'\rho' ,'=' , '100')
+        Q2 = TexMobject(r'100', r'\left[\begin{matrix}10 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 100 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 100 & 0\\0 & 0 & 0 & 0 & 0 & 0\end{matrix}\right]')
+        Q2[0].move_to(Q[2])
+        Q2[0].shift(0.075*UP+0.12*LEFT)
+        
+        muval = TexMobject(r'\mu ', '=', '1')
+        muval.next_to(rhoval, RIGHT)
+        muval.shift(0.2*RIGHT)
+        valsgroup = VGroup(rhoval, muval)
+        valsgroup.next_to(Q, DOWN)
+        
+        self.play(Write(rhoval))
+        self.play(Transform(rhoval,Q2[0]),
+                  FadeOut(Q[2]),
+                  Q[0].shift, 0.3*LEFT,
+                  Q[1].shift, 0.3*LEFT,)
+        
+        Q2[1].next_to(Q[1])
+        
+        self.play(Transform(Q2[0], Q2[1]),
+                  FadeOut(Q[3]),
+                  FadeOut(rhoval))
+        self.wait(1)
+        
+        self.play(Write(muval))
+        
+        Rval = TexMobject(r'1')
+        Rval.next_to(R[1], RIGHT)
+        self.play(Transform(muval,Rval),
+                  FadeOut(R[2]))
+        
+        self.wait(1)
         
 class CartDemo(Scene):
     def construct(self):

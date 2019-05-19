@@ -140,15 +140,16 @@ Qo = simplify(Matrix(n, n, Qovals))
 l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
-l1n = 1
-l2n = 2
-m1n = 5
-m2n = 1
-Mn  = 5
-gn  = 1
+l1n = 2
+l2n = 1
+m1n = 0.1
+m2n = 0.1
+Mn  = 1
+gn  = 10
+# Initial conditions for initial response
 t10 = 1 # Initial angle
-dt10 = 0
-t20 = 1
+dt10 = 3
+t20 = -5
 dt20 = 0
 x10 = 0
 dx10 = 0
@@ -165,68 +166,79 @@ if np.linalg.matrix_rank(Qcn) == n:
     print('System is controllable\n')
 else:
     print('System is uncontrollable\n')
-vector.vprint(Qcn)
+
 
 # Control system
 sys = control.ss(An,Bn,Cn,D)
 x0 = [x10, dx10, t10, dt10, t20, dt20]
+x0_stable = [0, 0, 0, 0, 0, 0]
 tspan = np.linspace(0,5,1000)
 
 
-# Step response
-#t, yout = control.step_response(ss, tspan, x0)
-#
-#plt.rc('text', usetex=True)
-#plt.plot(t,yout[0], label=r'$\theta_1$')
-#plt.plot(t,yout[1], label=r'$\theta_2$')
-#plt.xlabel(r'Time, t')
-#plt.ylabel(r'Angle, $\theta$')
-#plt.legend(loc='best')
-
-
-# Sin input
-#usin = 15*np.cos(tspan*2*np.pi)
-#t, yout, xout = control.forced_response(sys, tspan, usin, x0)
-#plt.rc('text', usetex=True)
-#plt.plot(t, xout[0], label=r'$\theta_1$')
-#plt.plot(t, xout[2], label=r'$\theta_2$')
-#plt.xlabel(r'Time, t')
-#plt.ylabel(r'Angle, $\theta$')
-#plt.legend(loc='best')
-
-# Calculate position x
-#x = np.zeros(len(tspan))
-#v = np.zeros(len(tspan))
-#deltat = tspan[1]-tspan[0]
-#for i in range(0,len(t)-1):
-#    if i == 0:
-#        x[i+1] = 0.5*usin[i]*(deltat)**2
-#    else:
-#        x[i+1] = x[i] +v[i]*deltat + 0.5*usin[i]*(deltat)**2
-#        v[i+1] = (x[i+1]-x[i])/deltat
-
 # Control with LQR
 # Starting with just Q = R = I
-Q = 100*np.dot(np.transpose(Cn), Cn)
+rho = 100
+Q = rho*np.diag([0.1, 0, 1, 0, 1, 0])
+# Matrix(np.diag([0.1, 0, 1, 0, 1, 0])).subs([(0.0, 0), (1.0, 1)])
 R = np.eye(m)
 K, S, E = control.lqr(sys, Q, R)
-print('Anything')
+
 
 Ac = An-Bn*K
 
 x0 = [x10, dx10, t10, dt10, t20, dt20]
-tspan = np.linspace(0,20,1000)
+tspan = np.linspace(0,10,1000)
 
 sysc = control.ss(Ac,Bn,Cn,D) 
-tc, youtc, xoutc = control.impulse_response(sysc, tspan, x0, return_x=True)
+
+
+#xlims = [0, 10]
+condition = '$l_1 = 2 l_2$'
+# Initial Response
+tcic, youtic, xoutic = control.initial_response(sysc, tspan, x0, return_x=True)
+
+plt.style.use('dark_background')
+fig0, ax0 = plt.subplots()
 plt.rc('text', usetex=True)
-plt.plot(tc, xoutc[0], label=r'$x$')
-plt.plot(tc, xoutc[2], label=r'$\theta_1$')
-plt.plot(tc, xoutc[4], label=r'$\theta_2$')
-plt.xlabel(r'Time, t')
-plt.ylabel(r'Angle, $\theta$')
-plt.legend(loc='best')
-plt.savefig('Ctrl.png', dpi=300)
+ax0.plot(tcic, xoutic[2], label=r'$\theta_1$', color='#39ff14')
+ax0.plot(tcic, xoutic[4], label=r'$\theta_2$', color='#4DA4B5')
+ax0.set_xlim(right=xlims[1])
+ax0.set_xlabel(r'Time, seconds')
+ax0.set_ylabel(r'$\theta$, degrees')
+impulsetitle = condition + r' Initial Response'
+ax0.set_title(impulsetitle)
+ax0.legend(loc='best')
+fig0.savefig(condition+'initial_response.png', dpi=300)
+
+# Impulse Response
+tcimpulse, youtimpulse, xoutimpulse = control.impulse_response(sysc, tspan, x0_stable, return_x=True)
+plt.style.use('dark_background')
+fig1, ax1 = plt.subplots()
+plt.rc('text', usetex=True)
+ax1.plot(tcimpulse, xoutimpulse[2], label=r'$\theta_1$', color='#39ff14')
+ax1.plot(tcimpulse, xoutimpulse[4], label=r'$\theta_2$', color='#4DA4B5')
+ax1.set_xlim(right=xlims[1])
+ax1.set_xlabel(r'Time, seconds')
+ax1.set_ylabel(r'$\theta$, degrees')
+impulsetitle = condition+ ' Impulse Response'
+ax1.set_title(impulsetitle, usetex=True)
+ax1.legend(loc='best')
+fig1.savefig(condition+'impulse_response.png', dpi=300)
+
+# Step Response
+#tcstep, youtstep, xoutstep = control.step_response(sysc, tspan, x0_stable, return_x=True)
+##plt.style.use('dark_background')
+#fig2, ax2 = plt.subplots()
+#plt.rc('text', usetex=True)
+#ax2.plot(tcimpulse, xoutstep[2], label=r'$\theta_1$', color='#39ff14')
+#ax2.plot(tcimpulse, xoutstep[4], label=r'$\theta_2$', color='#4DA4B5')
+#ax2.set_xlim(right=xlims[1])
+#ax2.set_xlabel(r'Time, seconds')
+#ax2.set_ylabel(r'$\theta$, degrees')
+#impulsetitle = condition+' Step Response'
+#ax2.set_title(impulsetitle)
+#ax2.legend(loc='best')
+#fig2.savefig(condition+'step_response.png', dpi=300)
 
 ###############################################################################
 # Animation stuff
