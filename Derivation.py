@@ -194,43 +194,140 @@ sysc = control.ss(Ac,Bn,Cn,D)
 
 
 #xlims = [0, 10]
-condition = '$l_1 = 2 l_2$'
+condition = '$l_1 = 2 l_2, m_1=m_2$'
+filecondition = condition.replace('$','').replace('_', '').replace(',', '_').replace(' ', '')
+
+# Colors
+t1color = '#39ff14'
+t2color = '#4DA4B5'
+xcolor = '#fff700'
+
 # Initial Response
 tcic, youtic, xoutic = control.initial_response(sysc, tspan, x0, return_x=True)
 
 plt.style.use('dark_background')
 fig0, ax0 = plt.subplots()
+ax0 = plt.subplot(1,1,1)
 plt.rc('text', usetex=True)
-ax0.plot(tcic, xoutic[2], label=r'$\theta_1$', color='#39ff14')
-ax0.plot(tcic, xoutic[4], label=r'$\theta_2$', color='#4DA4B5')
-
+ax0.plot(tcic, xoutic[2], label=r'$\theta_1$', color=t1color)
+ax0.plot(tcic, xoutic[4], label=r'$\theta_2$', color=t2color)
 ax0.set_xlabel(r'Time, seconds')
 ax0.set_ylabel(r'$\theta$, degrees')
-impulsetitle = condition + r' Initial Response'
-ax0.set_title(impulsetitle)
+ictitle = condition + r' Initial Response'
+ax0.set_title(ictitle)
 ax0.legend(loc='best')
-fig0.savefig(condition+'initial_response.png', dpi=300)
+# With x
+ax0R = ax0.twinx()
+ax0R.yaxis.tick_right()
+ax0R.yaxis.set_label_position('right')
+ax0R.set_ylabel('Position')
+ax0R.plot(tcic, xoutic[0], label=r'x', color=xcolor)
+
+#fig0.savefig(condition+'initial_response.png', dpi=300)
 
 # Impulse Response
-tcimpulse, youtimpulse, xoutimpulse = control.impulse_response(sysc, tspan, x0_stable, return_x=True)
+timpulse, youtimpulse, xoutimpulse = control.impulse_response(sysc, tspan, x0_stable, return_x=True)
 plt.style.use('dark_background')
 fig1, ax1 = plt.subplots()
 plt.rc('text', usetex=True)
-ax1.plot(tcimpulse, xoutimpulse[2], label=r'$\theta_1$', color='#39ff14')
-ax1.plot(tcimpulse, xoutimpulse[4], label=r'$\theta_2$', color='#4DA4B5')
+ax1.plot(timpulse, xoutimpulse[2], label=r'$\theta_1$', color=t1color)
+ax1.plot(timpulse, xoutimpulse[4], label=r'$\theta_2$', color=t2color)
 
 ax1.set_xlabel(r'Time, seconds')
 ax1.set_ylabel(r'$\theta$, degrees')
-impulsetitle = condition+ ' Impulse Response'
-ax1.set_title(impulsetitle, usetex=True)
+steptitle = condition+ ' step Response'
+ax1.set_title(steptitle, usetex=True)
 ax1.legend(loc='best')
-fig1.savefig(condition+'impulse_response.png', dpi=300)
+#fig1.savefig(condition+'step_response.png', dpi=300)
 
 ####
 # Animations
 ###
 
-# Initial condition response
+
+
+def align_yaxis(ax1, v1, ax2, v2):
+    """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
+    _, y1 = ax1.transData.transform((0, v1))
+    _, y2 = ax2.transData.transform((0, v2))
+    adjust_yaxis(ax2,(y1-y2)/2,v2)
+    adjust_yaxis(ax1,(y2-y1)/2,v1)
+
+def adjust_yaxis(ax,ydif,v):
+    """shift axis ax by ydiff, maintaining point v at the same location"""
+    inv = ax.transData.inverted()
+    _, dy = inv.transform((0, 0)) - inv.transform((0, ydif))
+    miny, maxy = ax.get_ylim()
+    miny, maxy = miny - v, maxy - v
+    if -miny>maxy or (-miny==maxy and dy > 0):
+        nminy = miny
+        nmaxy = miny*(maxy+dy)/(miny+dy)
+    else:
+        nmaxy = maxy
+        nminy = maxy*(miny+dy)/(maxy+dy)
+    ax.set_ylim(nminy+v, nmaxy+v)
+    
+def align_yaxis_np(ax1, ax2):
+    """Align zeros of the two axes, zooming them out by same ratio"""
+    axes = np.array([ax1, ax2])
+    extrema = np.array([ax.get_ylim() for ax in axes])
+    tops = extrema[:,1] / (extrema[:,1] - extrema[:,0])
+    # Ensure that plots (intervals) are ordered bottom to top:
+    if tops[0] > tops[1]:
+        axes, extrema, tops = [a[::-1] for a in (axes, extrema, tops)]
+
+    # How much would the plot overflow if we kept current zoom levels?
+    tot_span = tops[1] + 1 - tops[0]
+
+    extrema[0,1] = extrema[0,0] + tot_span * (extrema[0,1] - extrema[0,0])
+    extrema[1,0] = extrema[1,1] + tot_span * (extrema[1,0] - extrema[1,1])
+    [axes[i].set_ylim(*extrema[i]) for i in range(2)]    
+
+##
+# Initial condition response with x
+##
+tic = tcic
+xic = xoutic[0]
+t1ic = xoutic[2]
+t2ic = xoutic[4]
+fig3, ax3 = plt.subplots()
+ax3.set_xlabel(r'Time')
+ax3.set_ylabel(r'$\theta$, degrees')
+ax3.set_title(r'')
+plt.rc('text', usetex=True)
+t1icline, = ax3.plot(tcic,xoutic[2], label=r'$\theta_1$', color=t1color)
+t2icline, = ax3.plot(tcic,xoutic[4], label=r'$\theta_2$', color=t2color)
+ax3.legend(loc='upper right')
+iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax0.get_ylim()[0], ax0.get_ylim()[1]]
+# x stuff
+ax3R = ax3.twinx()
+ax3R.yaxis.tick_right()
+ax3R.yaxis.set_label_position('right')
+ax3R.set_ylabel('Position')
+xicline, = ax3R.plot(tcic, xic, label = r'x', color=xcolor)
+ax3Rlims = [ax0R.get_xlim()[0], ax0R.get_xlim()[1], ax0R.get_ylim()[0], ax0R.get_ylim()[1]]
+# legend
+lines = [t1icline, t2icline, xicline]
+labels = [l.get_label() for l in lines]
+ax3.legend(lines, labels, loc = 'upper right', prop={'size': 13})
+ictitle = condition + r' Initial Response'
+ax3.set_title(ictitle)
+# align the zeros
+#align_yaxis(ax3, 0, ax3R, 0)
+align_yaxis_np(ax3, ax3R)
+ax3Rlims = [ax3R.get_xlim()[0], ax3R.get_xlim()[1], ax3R.get_ylim()[0], ax3R.get_ylim()[1]]
+fig3.tight_layout()
+def updateic(num, tic, xic, xicline):
+    xicline.set_data(tic[:num], xic[:num])
+    xicline.axes.axis(ax3Rlims)
+    return xicline,
+ani = animation.FuncAnimation(fig3, updateic, len(tic), fargs=[tic, xic, xicline],
+                              interval=5, blit=True)
+ani.save('initial_response_wx_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=300)
+
+##
+# Initial condition response w/o x
+##
 tic = tcic
 t1ic = xoutic[2]
 t2ic = xoutic[4]
@@ -238,10 +335,13 @@ fig2, ax2 = plt.subplots()
 ax2.set_xlabel(r'Time, seconds')
 ax2.set_ylabel(r'$\theta$, degrees')
 plt.rc('text', usetex=True)
-t1icline, = ax2.plot(tcic,xoutic[2], label=r'$\theta_1$', color = '#39ff14')
-t2icline, = ax2.plot(tcic,xoutic[2], label=r'$\theta_2$', color = '#4DA4B5')
-ax2.legend(loc='upper right')
-iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax0.get_ylim()[0], ax0.get_ylim()[1]]
+t1icline, = ax2.plot(tcic,t1ic, label=r'$\theta_1$', color = '#39ff14')
+t2icline, = ax2.plot(tcic,t2ic, label=r'$\theta_2$', color = '#4DA4B5')
+ax2.legend(loc='upper right', prop={'size': 13})
+iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax3.get_ylim()[0], ax3.get_ylim()[1]]
+ictitle = condition + r' Initial Response'
+ax2.set_title(ictitle)
+fig2.tight_layout()
 def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
     t1icline.set_data(tic[:num], t1ic[:num])
     t2icline.set_data(tic[:num], t2ic[:num])
@@ -250,35 +350,147 @@ def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
 
 ani = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
                               interval=5, blit=True)
-ani.save(condition+'initial_response.mp4', writer='ffmpeg', codec='h264', dpi=300)
-plt.show()
+ani.save('initial_response_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=300)
+
+
+##
+# Impulse response with x
+##
+ximpulse = xoutimpulse[0]
+t1impulse = xoutimpulse[2]
+t2impulse = xoutimpulse[4]
+fig5, ax5 = plt.subplots()
+ax5.set_xlabel(r'Time')
+ax5.set_ylabel(r'$\theta$, degrees')
+ax5.set_title(r'')
+plt.rc('text', usetex=True)
+t1impulseline, = ax5.plot(timpulse,xoutimpulse[2], label=r'$\theta_1$', color=t1color)
+t2impulseline, = ax5.plot(timpulse,xoutimpulse[4], label=r'$\theta_2$', color=t2color)
+ax5.legend(loc='upper right')
+impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
+# x stuff
+ax5R = ax5.twinx()
+ax5R.yaxis.tick_right()
+ax5R.yaxis.set_label_position('right')
+ax5R.set_ylabel('Position')
+ximpulseline, = ax5R.plot(timpulse, ximpulse, label = r'x', color=xcolor)
+ax5Rlims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
+# legend
+lines = [t1impulseline, t2impulseline, ximpulseline]
+labels = [l.get_label() for l in lines]
+ax5.legend(lines, labels, loc = 'upper right', prop={'size': 13})
+impulsetitle = condition + r' Impulse Response'
+ax5.set_title(impulsetitle)
+# align the zeros
+#align_yaxis(ax5, 0, ax5R, 0)
+align_yaxis_np(ax5, ax5R)
+ax5Rlims = [ax5R.get_xlim()[0], ax5R.get_xlim()[1], ax5R.get_ylim()[0], ax5R.get_ylim()[1]]
+fig5.tight_layout()
+def updateimpulse(num, timpulse, ximpulse, ximpulseline):
+    ximpulseline.set_data(timpulse[:num], ximpulse[:num])
+    ximpulseline.axes.axis(ax5Rlims)
+    return ximpulseline,
+ani = animation.FuncAnimation(fig5, updateimpulse, len(tic), fargs=[timpulse, ximpulse, ximpulseline],
+                              interval=5, blit=True)
+
+ani.save('impulse_response_wx_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=300)
+
+##
+# Impulse response w/o x
+##
+t1impulse = xoutimpulse[2]
+t2impulse = xoutimpulse[4]
+fig4, ax4 = plt.subplots()
+ax4.set_xlabel(r'Time')
+ax4.set_ylabel(r'$\theta$, degrees')
+plt.rc('text', usetex=True)
+t1impulseline, = ax4.plot(tcic, t1impulse, label=r'$\theta_1$', color=t1color)
+t2impulseline, = ax4.plot(tcic, t2impulse, label=r'$\theta_2$', color=t2color)
+ax4.legend(loc='upper right', prop={'size': 13})
+impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax5.get_ylim()[0], ax5.get_ylim()[1]]
+impulsetitle = condition + r' Impulse Response'
+ax4.set_title(impulsetitle)
+fig4.tight_layout()
+def updateic(num, timpulse, t1impulse, t2impulse, t1impulseline, t2impulseline):
+    t1impulseline.set_data(timpulse[:num], t1impulse[:num])
+    t2impulseline.set_data(timpulse[:num], t2impulse[:num])
+    t1impulseline.axes.axis(impulselims)
+    return t1impulseline, t2impulseline,
+ani = animation.FuncAnimation(fig4, updateic, len(tic), fargs=[timpulse, t1impulse, t2impulse, t1impulseline, t2impulseline],
+                              interval=5, blit=True)
+
+ani.save('impulse_response_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=300)
+
+
+
+
+
+
+
+# Step response with x
+#tic = tcic
+#xic = xoutic[0]
+#
+#fig2, ax2 = plt.subplots()
+#ax2.set_xlabel(r'Time')
+#ax2.set_ylabel(r'$\theta$, degrees')
+#ax2.set_title(r'')
+#plt.rc('text', usetex=True)
+#t1icline, = ax2.plot(tcic,xoutic[2], label=r'$\theta_1$', color=t1color)
+#t2icline, = ax2.plot(tcic,xoutic[4], label=r'$\theta_2$', color=t2color)
+#ax2.legend(loc='upper right')
+#iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax0.get_ylim()[0], ax0.get_ylim()[1]]
+#
+## x stuff
+#ax2R = ax2.twinx()
+#ax2R.yaxis.tick_right()
+#ax2R.yaxis.set_label_position('right')
+#ax2R.set_ylabel('Position')
+#xicline, = ax2R.plot(tcic, xic, label = r'x', color=xcolor)
+#ax2Rlims = [ax0R.get_xlim()[0], ax0R.get_xlim()[1], ax0R.get_ylim()[0], ax0R.get_ylim()[1]]
+## legend
+#lines = [t1icline, t2icline, xicline]
+#labels = [l.get_label() for l in lines]
+#ax2.legend(lines, labels, loc = 'upper right', prop={'size': 13})
+#steptitle = condition + r' Step Response'
+#ax2.set_title(steptitle)
+#
+## align the zeros
+#def align_yaxis(ax1, v1, ax2, v2):
+#    """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
+#    _, y1 = ax1.transData.transform((0, v1))
+#    _, y2 = ax2.transData.transform((0, v2))
+#    inv = ax2.transData.inverted()
+#    _, dy = inv.transform((0, 0)) - inv.transform((0, y1-y2))
+#    miny, maxy = ax2.get_ylim()
+#    ax2.set_ylim(miny+dy, maxy+dy)
+#
+#align_yaxis(ax2, 0, ax2R, 0)
+#ax2Rlims = [ax2R.get_xlim()[0], ax2R.get_xlim()[1], ax2R.get_ylim()[0], ax2R.get_ylim()[1]]
+#def updateic(num, tic, xic, xicline):
+#    xicline.set_data(tic[:num], xic[:num])
+#    xicline.axes.axis(ax2Rlims)
+#    return xicline,
+#
+#ani = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, xic, xicline],
+#                              interval=5, blit=True)
+#ani.save(condition+'initial_response_wx.mp4', writer='ffmpeg', codec='h264', dpi=300)
+
+
+#plt.show()
 
 # Step Response
 #tcstep, youtstep, xoutstep = control.step_response(sysc, tspan, x0_stable, return_x=True)
 ##plt.style.use('dark_background')
 #fig2, ax2 = plt.subplots()
 #plt.rc('text', usetex=True)
-#ax2.plot(tcimpulse, xoutstep[2], label=r'$\theta_1$', color='#39ff14')
-#ax2.plot(tcimpulse, xoutstep[4], label=r'$\theta_2$', color='#4DA4B5')
+#ax2.plot(tcstep, xoutstep[2], label=r'$\theta_1$', color=t1color)
+#ax2.plot(tcstep, xoutstep[4], label=r'$\theta_2$', color=t2color)
 #ax2.set_xlim(right=xlims[1])
 #ax2.set_xlabel(r'Time, seconds')
 #ax2.set_ylabel(r'$\theta$, degrees')
-#impulsetitle = condition+' Step Response'
-#ax2.set_title(impulsetitle)
+#steptitle = condition+' Step Response'
+#ax2.set_title(steptitle)
 #ax2.legend(loc='best')
 #fig2.savefig(condition+'step_response.png', dpi=300)
 
-###############################################################################
-# Animation stuff
-###############################################################################
-#f = open("textAn1.py", "w+")
-#f.write("class BasicEquations(Scene):\n" + 
-#"    def construct(self): \n" +
-#"        eq1=TextMobject(\"$\\vec{X}_0 \\cdot \\vec{Y}_1 = 3$\") \n" +
-#"        eq1.shift(2*UP) \n" +
-#"        eq2=TexMobject(r\"\vec{F}_{net} = \sum_i \vec{F}_i\") \n" +
-#"        eq2.shift(2*DOWN) \n" + 
-#"        self.play(Write(eq1))  \n" +
-#"        self.play(Write(eq2))")
-#f.close()
-#Qctext = print(vlatex(Qc))
