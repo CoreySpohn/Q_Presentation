@@ -195,9 +195,9 @@ class Dynamics(Scene):
 
 class Controls(Scene):
     def construct(self):
-#        self.stateSpace()
-#        self.controllability()
-#        self.observability()
+        self.stateSpace()
+        self.controllability()
+        self.observability()
         self.LQR()
         
     def stateSpace(self):

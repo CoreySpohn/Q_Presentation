@@ -19,6 +19,7 @@ from sympy.physics.vector.printing import vpprint, vlatex
 import numpy as np
 import control
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 vector.init_vprinting()
 
@@ -202,7 +203,7 @@ fig0, ax0 = plt.subplots()
 plt.rc('text', usetex=True)
 ax0.plot(tcic, xoutic[2], label=r'$\theta_1$', color='#39ff14')
 ax0.plot(tcic, xoutic[4], label=r'$\theta_2$', color='#4DA4B5')
-ax0.set_xlim(right=xlims[1])
+
 ax0.set_xlabel(r'Time, seconds')
 ax0.set_ylabel(r'$\theta$, degrees')
 impulsetitle = condition + r' Initial Response'
@@ -217,13 +218,38 @@ fig1, ax1 = plt.subplots()
 plt.rc('text', usetex=True)
 ax1.plot(tcimpulse, xoutimpulse[2], label=r'$\theta_1$', color='#39ff14')
 ax1.plot(tcimpulse, xoutimpulse[4], label=r'$\theta_2$', color='#4DA4B5')
-ax1.set_xlim(right=xlims[1])
+
 ax1.set_xlabel(r'Time, seconds')
 ax1.set_ylabel(r'$\theta$, degrees')
 impulsetitle = condition+ ' Impulse Response'
 ax1.set_title(impulsetitle, usetex=True)
 ax1.legend(loc='best')
 fig1.savefig(condition+'impulse_response.png', dpi=300)
+
+####
+# Animations
+###
+tic = tcic
+t1ic = xoutic[2]
+t2ic = xoutic[4]
+fig2, ax2 = plt.subplots()
+ax2.set_xlabel(r'Time, seconds')
+ax2.set_ylabel(r'$\theta$, degrees')
+plt.rc('text', usetex=True)
+t1line, = ax2.plot(tcic,xoutic[2], label=r'$\theta_1$', color = '#39ff14')
+t2line, = ax2.plot(tcic,xoutic[2], label=r'$\theta_2$', color = '#4DA4B5')
+ax2.legend(loc='upper right')
+iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax0.get_ylim()[0], ax0.get_ylim()[1]]
+def updateic(num, tic, t1ic, t2ic, t1line, t2line):
+    t1line.set_data(tic[:num], t1ic[:num])
+    t2line.set_data(tic[:num], t2ic[:num])
+    t1line.axes.axis(iclims)
+    return t1line, t2line,
+
+ani = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1line, t2line],
+                              interval=5, blit=True)
+ani.save(condition+'initial_response.mp4', writer='ffmpeg', codec='h264', dpi=300)
+plt.show()
 
 # Step Response
 #tcstep, youtstep, xoutstep = control.step_response(sysc, tspan, x0_stable, return_x=True)
