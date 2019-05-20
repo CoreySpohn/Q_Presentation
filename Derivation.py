@@ -229,6 +229,8 @@ fig1.savefig(condition+'impulse_response.png', dpi=300)
 ####
 # Animations
 ###
+
+# Initial condition response
 tic = tcic
 t1ic = xoutic[2]
 t2ic = xoutic[4]
@@ -236,17 +238,17 @@ fig2, ax2 = plt.subplots()
 ax2.set_xlabel(r'Time, seconds')
 ax2.set_ylabel(r'$\theta$, degrees')
 plt.rc('text', usetex=True)
-t1line, = ax2.plot(tcic,xoutic[2], label=r'$\theta_1$', color = '#39ff14')
-t2line, = ax2.plot(tcic,xoutic[2], label=r'$\theta_2$', color = '#4DA4B5')
+t1icline, = ax2.plot(tcic,xoutic[2], label=r'$\theta_1$', color = '#39ff14')
+t2icline, = ax2.plot(tcic,xoutic[2], label=r'$\theta_2$', color = '#4DA4B5')
 ax2.legend(loc='upper right')
 iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax0.get_ylim()[0], ax0.get_ylim()[1]]
-def updateic(num, tic, t1ic, t2ic, t1line, t2line):
-    t1line.set_data(tic[:num], t1ic[:num])
-    t2line.set_data(tic[:num], t2ic[:num])
-    t1line.axes.axis(iclims)
-    return t1line, t2line,
+def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
+    t1icline.set_data(tic[:num], t1ic[:num])
+    t2icline.set_data(tic[:num], t2ic[:num])
+    t1icline.axes.axis(iclims)
+    return t1icline, t2icline,
 
-ani = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1line, t2line],
+ani = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
                               interval=5, blit=True)
 ani.save(condition+'initial_response.mp4', writer='ffmpeg', codec='h264', dpi=300)
 plt.show()
