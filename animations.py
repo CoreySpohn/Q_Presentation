@@ -252,7 +252,7 @@ class Controls(Scene):
                 t2ddL.to_corner, UP+RIGHT,
                 run_time=1,)
         
-        self.wait(1)
+        self.wait(0.5)
         # State vector
         z = TexMobject(r"z = ", r"\left[\begin{matrix} x \\ \dot{x} \\ \theta_1 \\ \dot{\theta_1} \\ \theta_2 \\ \dot{\theta_2} \end{matrix}\right]")
         zd = TexMobject(r"\dot{z} =",  r"\left[\begin{matrix} \dot{x} \\ \ddot{x} \\ \dot{\theta_1} \\ \ddot{\theta_1} \\ \dot{\theta_2} \\ \ddot{\theta_2} \end{matrix}\right]")
@@ -263,18 +263,18 @@ class Controls(Scene):
         
         deriv.next_to(z, LEFT)
         self.play(Write(z))
-        self.wait(2)
+        self.wait(0.5)
         self.play(Write(deriv))
-        self.wait(2)
+        self.wait(0.5)
         self.play(
                 ReplacementTransform(z, zd),
                 deriv.fade,1)
-        self.wait(2)
+        self.wait(0.5)
         self.play(
                 zd[1].to_edge, LEFT,
                 zd[0].fade, 1,
                 run_time=1)
-        self.wait(2)
+        self.wait(0.5)
         self.play(
                 Write(zdexpr),
                 run_time=1,)
@@ -282,7 +282,7 @@ class Controls(Scene):
         self.play(
                 zdexpr.next_to, t1ddL, DOWN,
                 run_time=1)
-        self.wait(2)
+        self.wait(0.5)
         # Write out A and B
         A = TexMobject(r"= ", r"\left[\begin{matrix}0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & - \frac{g m_{2}}{M} & 0\\0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & \frac{g \left(M + m_{1}\right)}{M l_{1}} & 0 & - \frac{g m_{2}}{M l_{1}} & 0\\0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & - \frac{g m_{1}}{M l_{2}} & 0 & \frac{g \left(M + m_{2}\right)}{M l_{2}} & 0\end{matrix}\right]")
         
@@ -292,7 +292,7 @@ class Controls(Scene):
                 TransformFromCopy(zdexpr[2], A),
                 TransformFromCopy(zdexpr[3], zvec),
                 run_time=1)
-        self.wait(2)
+        self.wait(0.5)
         B = TexMobject(r"B = ", r"\left[\begin{matrix}0\\\frac{1}{M}\\0\\\frac{1}{M l_{1}}\\0\\- \frac{1}{M l_{2}}\end{matrix}\right]")
         plus = TexMobject(r"+")
         u = TexMobject(r"u")
@@ -306,7 +306,7 @@ class Controls(Scene):
                 TransformFromCopy(zdexpr[6], u),
                 run_time=1)
         
-        self.wait(2)
+        self.wait(1)
         # Clear top of screen
         zdfullexpr = VGroup(zd[1], A, zvec, plus, B[1], u)
         self.play(
@@ -317,16 +317,8 @@ class Controls(Scene):
                 zdfullexpr.to_edge, UP,
                 run_time=1)
         
-        self.wait(2)
+        self.wait(1)
 
-        
-        # Now for y = C z
-        yexpr = TexMobject(r"y", r"=", r"C", r"z")
-        yexpr.to_edge(DOWN)
-        yexpr.shift(0.75*UP)
-#        yexpr.align_to(zd[1], LEFT)
-        self.play(Write(yexpr))
-        self.wait(2)
         # Reduce the zd = Az+Bu expresion to drive home what z is
         zdsym = TexMobject(r'\dot{z}')
         zsym = TexMobject(r'z')
@@ -347,6 +339,15 @@ class Controls(Scene):
                 MaintainPositionRelativeTo(B[1], zsym),
                 MaintainPositionRelativeTo(u, zsym))
         self.wait(2)
+        
+        # Now for y = C z
+        yexpr = TexMobject(r"y", r"=", r"C", r"z")
+        yexpr.to_edge(DOWN)
+        yexpr.shift(0.75*UP)
+#        yexpr.align_to(zd[1], LEFT)
+        self.play(Write(yexpr))
+        self.wait(2)
+        
         yfull = TexMobject(r"y", r"=", r"\left[\begin{matrix}1 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 1 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 1 & 0\end{matrix}\right]", r'z')
         yfull.to_edge(DOWN)
         self.play(
@@ -362,18 +363,25 @@ class Controls(Scene):
                 FadeOutAndShift(yfull, DOWN),
                 plus.fade, 1,)
         
+       
         
-        self.play(
-                A[1].center)
-        self.wait(1)
-        self.play(B[1].next_to, A[1], RIGHT)
-        self.remove(A[1], B[1])
+        A2 = TexMobject(r"A = ", r"\left[\begin{matrix}0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & - \frac{g m_{2}}{M} & 0\\0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & \frac{g \left(M + m_{1}\right)}{M l_{1}} & 0 & - \frac{g m_{2}}{M l_{1}} & 0\\0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & - \frac{g m_{1}}{M l_{2}} & 0 & \frac{g \left(M + m_{2}\right)}{M l_{2}} & 0\end{matrix}\right]")
+        B2 = TexMobject(r"B = ", r"\left[\begin{matrix}0\\\frac{1}{M}\\0\\\frac{1}{M l_{1}}\\0\\- \frac{1}{M l_{2}}\end{matrix}\right]")
+        B2.next_to(A2, RIGHT)
+        newmatgroup = VGroup(A2, B2)
+        newmatgroup.center()
+        newmatgroup.to_edge(UP)
+        self.play(Transform(A[1], A2),
+                  Transform(B[1], B2))
+        self.remove(A2, B2, A[1], B[1])
         
     def controllability(self):
-        A = TexMobject(r'\left[\begin{matrix}0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & - \frac{g m_{2}}{M} & 0\\0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & \frac{g \left(M + m_{1}\right)}{M l_{1}} & 0 & - \frac{g m_{2}}{M l_{1}} & 0\\0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & - \frac{g m_{1}}{M l_{2}} & 0 & \frac{g \left(M + m_{2}\right)}{M l_{2}} & 0\end{matrix}\right]')
-        B = TexMobject(r'\left[\begin{matrix}0\\\frac{1}{M}\\0\\\frac{1}{M l_{1}}\\0\\- \frac{1}{M l_{2}}\end{matrix}\right]')
-        A.center
+        A = TexMobject(r'A = ', r'\left[\begin{matrix}0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & - \frac{g m_{2}}{M} & 0\\0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & \frac{g \left(M + m_{1}\right)}{M l_{1}} & 0 & - \frac{g m_{2}}{M l_{1}} & 0\\0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & - \frac{g m_{1}}{M l_{2}} & 0 & \frac{g \left(M + m_{2}\right)}{M l_{2}} & 0\end{matrix}\right]')
+        B = TexMobject(r'B = ', r'\left[\begin{matrix}0\\\frac{1}{M}\\0\\\frac{1}{M l_{1}}\\0\\- \frac{1}{M l_{2}}\end{matrix}\right]')
         B.next_to(A, RIGHT)
+        newmatgroup = VGroup(A, B)
+        newmatgroup.center()
+        newmatgroup.to_edge(UP)
         self.add(A, B)
         self.play(A.to_edge, UP,
                   B.to_edge, UP,
@@ -396,12 +404,13 @@ class Controls(Scene):
         Qc.scale(0.35)
         Qc.stretch(1.5,1)
         self.play(Write(Qc))
-        
+        self.wait(0.5)
         # Determinant of Qc
         QcBrace = Brace(Qc[2],DOWN)
         detQc = TexMobject(r'\operatorname{det}Q_c', r'=', r'\frac{g^{6} \left(l_{1} - l_{2}\right)^{2}}{M^{6} l_{1}^{6} l_{2}^{6}}')
         detQc.next_to(QcBrace, DOWN)
         self.play(GrowFromCenter(QcBrace), Write(detQc))
+        self.wait(0.5)
         
         # Controllability condition
         noctrl = TexMobject(r'\operatorname{if}\ ', r'l_1', r'=', r'l_2')
@@ -409,8 +418,10 @@ class Controls(Scene):
         detQc0 = TexMobject(r'0')
         detQc0.next_to(detQc[1],RIGHT)
         self.play(Write(noctrl))
+        self.wait(0.5)
         
         self.play(Transform(detQc[2], detQc0))
+        self.wait(0.5)
         self.remove(detQc[2])
         noctrlgroup = VGroup(noctrl, detQc0, detQc[0], detQc[1])
         
@@ -419,17 +430,17 @@ class Controls(Scene):
                 FadeOutAndShift(QcBrace, UP),
                 FadeOutAndShift(Qcexpr, UP),
                 noctrlgroup.center)
-        
+        self.wait(0.5)
         # State explicitly that it's uncontrollable
 #        ctrlcopy = noctrlgroup.copy()
         noctrl2 = TexMobject(r'\operatorname{if}\ ', r'\operatorname{det}Q_c', r'=', r'0')
-        self.play(noctrlgroup.shift,1*UP)
+#        self.play(noctrlgroup.shift,1*UP)
         noctrl2.next_to(noctrlgroup,DOWN)
         self.play(TransformFromCopy(noctrlgroup, noctrl2))
         ctrlstatement = TextMobject(r'The system is uncontrollable')
         ctrlstatement.next_to(noctrl2, DOWN)
         self.play(Write(ctrlstatement))
-        
+        self.wait(0.5)
         self.play(FadeOut(ctrlstatement),
                   FadeOut(noctrl2),
                   FadeOut(noctrlgroup))
@@ -442,8 +453,9 @@ class Controls(Scene):
         AandC = TexMobject(r'A = ', r'\left[\begin{matrix}0 & 1 & 0 & 0 & 0 & 0\\0 & 0 & \frac{g m_{1}}{M} & 0 & - \frac{g m_{2}}{M} & 0\\0 & 0 & 0 & 1 & 0 & 0\\0 & 0 & \frac{g \left(M + m_{1}\right)}{M l_{1}} & 0 & - \frac{g m_{2}}{M l_{1}} & 0\\0 & 0 & 0 & 0 & 0 & 1\\0 & 0 & - \frac{g m_{1}}{M l_{2}} & 0 & \frac{g \left(M + m_{2}\right)}{M l_{2}} & 0\end{matrix}\right]',
                            r'C = ', r'\left[\begin{matrix}1 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 1 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 1 & 0\end{matrix}\right]')
         AandC.scale(0.75)
+        AandC.to_edge(UP)
         self.play(Write(AandC))
-        self.play(AandC.to_edge, UP)
+#        self.play(AandC.to_edge, UP)
         Qoexpr = TexMobject(r'Q_o', r'=', r'\left[ C \quad C A \quad C A^2 \quad C A^3 \quad C A^4 \quad C A^5 \right]')
         Qoexpr.next_to(AandC, DOWN)
         self.play(Write(Qoexpr))
@@ -463,15 +475,16 @@ class Controls(Scene):
         detQo = TexMobject(r'\operatorname{det}Q_o', r'=', r'\frac{g^{6} m_{1}^{2} m_{2}^{2} \left(l_{1} - l_{2}\right)^{2}}{M^{4} l_{1}^{2} l_{2}^{2}}')
         detQo.next_to(QoBrace, DOWN)
         self.play(GrowFromCenter(QoBrace), Write(detQo))
-        
+        self.wait(0.5)
         # observeability condition
         noobs = TexMobject(r'\operatorname{if}\ ', r'l_1', r'=', r'l_2')
         noobs.next_to(detQo, LEFT)
         detQo0 = TexMobject(r'0')
         detQo0.next_to(detQo[1],RIGHT)
         self.play(Write(noobs))
-        
+        self.wait(0.5)
         self.play(Transform(detQo[2], detQo0))
+        self.wait(0.5)
         self.remove(detQo[2])
         noobsgroup = VGroup(noobs, detQo0, detQo[0], detQo[1])
         
@@ -480,40 +493,58 @@ class Controls(Scene):
                 FadeOutAndShift(QoBrace, UP),
                 FadeOutAndShift(Qoexpr, UP),
                 noobsgroup.center)
-        
+        self.wait(0.5)
         # State explicitly that it's unobserveable
 #        obscopy = noobsgroup.copy()
         noobs2 = TexMobject(r'\operatorname{if}\ ', r'\operatorname{det}Q_o', r'=', r'0')
-        self.play(noobsgroup.shift,1*UP)
+#        self.play(noobsgroup.shift,1*UP)
         noobs2.next_to(noobsgroup,DOWN)
         self.play(TransformFromCopy(noobsgroup, noobs2))
-        obsstatement = TextMobject(r'The system is unobserveable')
+        self.wait(0.5)
+        obsstatement = TextMobject(r'The system is unobservable')
         obsstatement.next_to(noobs2, DOWN)
         self.play(Write(obsstatement))
+        self.wait(0.5)
         self.play(FadeOut(obsstatement),
                   FadeOut(noobs2),
                   FadeOut(noobsgroup))
-        
+        self.wait(0.5)
     def LQR(self):
+        # State feedback
+        nofeedback = TexMobject(r'\dot{z}=', r'Az',r'+', 'B u')
+        nofeedback.to_edge(UP)
+        self.play(Write(nofeedback))
+        self.wait(0.5)
+        uexpr = TexMobject(r'u', '=', '-', 'K z')
+        uexpr.next_to(nofeedback, DOWN)
+        self.play(Write(uexpr))
+        
+        feedback = TexMobject(r'\dot{z} = (A-B K)z')
+        feedback.move_to(nofeedback)
+        
+        self.play(ReplacementTransform(nofeedback, feedback))
+        self.wait(0.5)
+        self.play(feedback.to_corner, UP+LEFT,
+                  uexpr.to_corner, UP+RIGHT)
         lqrexpr = TexMobject(r'J = ', r'\int_0^\infty (  ', r'z^T', r'Q' ,r'z', r'+', r'u^T', r'R', ' u', r' ) dt')
         lqrexpr.to_edge(UP)
         self.play(Write(lqrexpr))
-        
+        self.wait(0.5)
         
         z = TexMobject(r"z = ", r"\left[\begin{matrix} x \\ \dot{x} \\ \theta_1 \\ \dot{\theta_1} \\ \theta_2 \\ \dot{\theta_2} \end{matrix}\right]")
         z.to_edge(LEFT)
         self.play(TransformFromCopy(lqrexpr[4], z))
+        self.wait(0.5)
         
-        
-        Q = TexMobject(r'Q', r'=', r'\rho', r'\left[\begin{matrix}0.1 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 1 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 1 & 0\\0 & 0 & 0 & 0 & 0 & 0\end{matrix}\right]')
+        Q = TexMobject(r'Q', r'=', r'\rho', r'\left[\begin{matrix}0.01 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 1 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 1 & 0\\0 & 0 & 0 & 0 & 0 & 0\end{matrix}\right]')
         self.play(TransformFromCopy(lqrexpr[3], Q))
-        
+        self.wait(0.5)
         R = TexMobject(r'R', '=', r'\mu')
         R.to_edge(RIGHT)
         self.play(TransformFromCopy(lqrexpr[7], R))
         
         rhoval = TexMobject(r'\rho' ,'=' , '100')
-        Q2 = TexMobject(r'100', r'\left[\begin{matrix}10 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 100 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 100 & 0\\0 & 0 & 0 & 0 & 0 & 0\end{matrix}\right]')
+        Q2 = TexMobject(r'100', r'\left[\begin{matrix}1 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 100 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 0 & 0\\0 & 0 & 0 & 0 & 100 & 0\\0 & 0 & 0 & 0 & 0 & 0\end{matrix}\right]')
         Q2[0].move_to(Q[2])
         Q2[0].shift(0.075*UP+0.12*LEFT)
         
@@ -522,15 +553,16 @@ class Controls(Scene):
         muval.shift(0.2*RIGHT)
         valsgroup = VGroup(rhoval, muval)
         valsgroup.next_to(Q, DOWN)
-        
+        self.wait(0.5)
         self.play(Write(rhoval))
+        self.wait(0.5)
         self.play(Transform(rhoval,Q2[0]),
                   FadeOut(Q[2]),
                   Q[0].shift, 0.3*LEFT,
                   Q[1].shift, 0.3*LEFT,)
         
         Q2[1].next_to(Q[1])
-        
+        self.wait(0.5)
         self.play(Transform(Q2[0], Q2[1]),
                   FadeOut(Q[3]),
                   FadeOut(rhoval))
@@ -545,9 +577,26 @@ class Controls(Scene):
         
         self.wait(1)
         
+        self.play(FadeOut(Q2[0]), FadeOut(Q[1]), FadeOut(Q[0]), FadeOut(R[0]), FadeOut(R[1]), FadeOut(muval), FadeOut(z))
+        
+        Pexpr = TexMobject(r'0 = P A + A^T P - P B R^{-1}B^T P + Q')
+        Pexpr.center()
+        ueq = TexMobject(r'u=-', r'R^{-1} B^T P', 'z')
+        ueq.next_to(Pexpr, DOWN)
+        Kbrace = Brace(ueq[1])
+        K = TexMobject(r'K')
+        K.next_to(Kbrace, DOWN)
+        self.play(Write(Pexpr))
+        self.wait(0.5)
+        self.play(Write(ueq))
+        self.wait(0.5)
+        self.play(GrowFromCenter(Kbrace), Write(K))
+        self.wait(0.5)
+        
 class CartDemo(Scene):
     def construct(self):
-        self.simpleMotion()
+#        self.simpleMotion()
+        self.initialConditionPic()
         
     def simpleMotion(self):
         m1radius = 0.25
@@ -634,9 +683,6 @@ class CartDemo(Scene):
         l2text_1.next_to(rod2, RIGHT)
         l2text_1.shift(0.75*LEFT)
         
-        
-        
-        
         # Create groups to move together
         cart = VGroup(M, w1, w2)
         
@@ -700,7 +746,6 @@ class CartDemo(Scene):
                   run_time=0.5)
         self.play(Write(xtext),
                   run_time=0.5)
-        
         self.wait(0.5)
         
         # Gravity
@@ -806,17 +851,17 @@ class CartDemo(Scene):
         
         self.wait(3)
         
-    def firstAttempt(self):
+    def initialConditionPic(self):
         m1radius = 0.25
         m2radius = 0.25
         
         # Lengths, should also add angle
-        l1 = 2
-        l2 = 2
+        l1 = 3.75
+        l2 = 3.75
         
         # Angles (rad)
-        t1 = 30 *np.pi/180
-        t2 = 30 *np.pi/180
+        t1 = PI/7
+        t2 = PI/7
         
         # Unit vectors
         er1 = -np.sin(t1)*RIGHT+np.cos(t1)*UP
@@ -827,15 +872,15 @@ class CartDemo(Scene):
         
         # Cart properties
         r_M_O = [0, -1] # Position of cart wrt the origin
-        d_M = [1, 4] # Cart height, width
+        d_M = [0.75, 5] # Cart height, width
         
         # Wheel properties
         wheelradius = 0.4
-        r_w1_O = [-2*wheelradius+r_M_O[0], -0.5*d_M[0]-wheelradius+r_M_O[1]]
-        r_w2_O = [2*wheelradius+r_M_O[0], -0.5*d_M[0]-wheelradius+r_M_O[1]]
+        r_w1_O = [-3*wheelradius+r_M_O[0], -0.25*d_M[0]-wheelradius+r_M_O[1]]
+        r_w2_O = [3*wheelradius+r_M_O[0], -0.25*d_M[0]-wheelradius+r_M_O[1]]
         
         # Ground properties
-        r_G = [0,-0.5*d_M[0]-2*wheelradius-r_M_O[1]]
+        r_G = [0,-0.5*d_M[0]-1.64*wheelradius+r_M_O[1],0]
         
         # Position of hinges
         r_C1_O = [r_M_O[0]-0.25*d_M[1], r_M_O[1]+0.5*d_M[0], 0]
@@ -857,6 +902,9 @@ class CartDemo(Scene):
         GREY_1 = '#444444'
         
         # Create and place shapes
+        rod1 = Line(np.array(r_C1_O), np.array(r_m1_O), stroke_color=GREY_1)
+        rod2 = Line(np.array(r_C2_O), np.array(r_m2_O), stroke_color=GREY_1)
+        
         M = Rectangle(height=d_M[0], width=d_M[1], fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
         M.shift(r_M_O[0]*RIGHT+r_M_O[1]*UP)
         
@@ -871,34 +919,159 @@ class CartDemo(Scene):
         
         m2 = Circle(radius=m2radius, fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
         m2.shift(r_m2_O[0]*RIGHT+r_m2_O[1]*UP)
-          
-        rod1 = Line(np.array(r_C1_O), np.array(r_m1_O), stroke_color=GREY_1)
-        rod2 = Line(np.array(r_C2_O), np.array(r_m2_O), stroke_color=GREY_1)
         
+        # text 
+        Mtext = TexMobject(r'M')
+        Mtext.move_to(M)
+        
+        m1text_1 = TexMobject(r'm')
+        m1text_1.next_to(m1, UP)
+        l1text_1 = TexMobject(r'l')
+        l1text_1.next_to(rod1, LEFT)
+        l1text_1.shift(0.75*RIGHT)
+        
+        m2text_1 = TexMobject(r'm')
+        m2text_1.next_to(m2, UP)
+        l2text_1 = TexMobject(r'l')
+        l2text_1.next_to(rod2, RIGHT)
+        l2text_1.shift(0.75*LEFT)
+        
+        m1text_2 = TexMobject(r'm_1')
+        m1text_2.move_to(m1text_1)
+        m2text_2 = TexMobject(r'm_2')
+        m2text_2.move_to(m2text_1)
+        
+        l1text_2 = TexMobject(r'l_1')
+        l1text_2.move_to(l1text_1)
+        l2text_2 = TexMobject(r'l_2')
+        l2text_2.move_to(l2text_1)
+        
+        vargroup = VGroup(m1text_2, m2text_2, l1text_2, l2text_2, Mtext)
+        
+        ground = Line(np.array(r_G+6*LEFT), np.array(r_G+6*RIGHT))
         
         # Create groups to move together
         cart = VGroup(M, w1, w2)
+        
         p1 = VGroup(m1, rod1)
         p2 = VGroup(m2, rod2)
         sys = VGroup(cart, p1, p2)
-        # Add elements to scene
-        self.add(cart, p1, p2)
-        self.bring_to_back(rod1, rod2)
-        rod1.always_continually_update = True
-        print(rod1.points[0]+OUT)
-        print(p1.points)
-        movement = 0.2*DOWN
-#        self.play(ApplyMethod(cart.move_to, self.relVec(cart, movement)), ApplyMethod(p1.move_to, self.relVec(p1, movement)), ApplyMethod(p2.move_to, self.relVec(p2, movement)))
-#        self.play(self.moveSys(sys, 0.2*DOWN), Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
-        self.play(self.moveSys(sys, 0.2*DOWN), Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
-#        self.play(FadeIn(m1), FadeIn(m2), FadeIn(rod1), FadeIn(rod2))
-#        self.bring_to_back(rod1, rod2)
         
-#        self.play(Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
+        
+        ##
+        # Angles and position x
+        ##
+        # theta1
+        t1refline = DashedLine(np.array(r_C1_O), np.array(r_C1_O+7*UP), stroke_color=WHITE)
+        t1arcpoint1 = r_C1_O + 0.5*l1*UP
+        t1arcpoint2 = r_C1_O + 0.5*l1*er1
+        t1arc = ArcBetweenPoints(t1arcpoint1, t1arcpoint2)
+        t1text = TexMobject(r'\theta_1')
+        t1text.next_to(t1arc, UP)
+        t1text.scale(1.25)
+        t1group = VGroup(t1refline, t1arc,t1text)
+        
+        # theta2
+        t2refline = DashedLine(np.array(r_C2_O), np.array(r_C2_O+7*UP), stroke_color=WHITE)
+        t2arcpoint1 = r_C2_O + 0.5*l2*UP
+        t2arcpoint2 = r_C2_O + 0.5*l2*er2
+        t2arc = ArcBetweenPoints(t2arcpoint2, t2arcpoint1)
+        t2text = TexMobject(r'\theta_2')
+        t2text.next_to(t2arc, UP)
+        t2text.scale(1.25)
+        t2group = VGroup(t2refline, t2arc,t2text)
+        
+        # x
+        xrefline = DashedLine(np.array(6*LEFT+4*DOWN), np.array(6*LEFT+4*UP), stroke_color=WHITE)
+        xcenterline = DashedLine(np.array(1*DOWN), np.array(5*DOWN), stroke_color=WHITE)
+        xarrow = Arrow(np.array(6.23*LEFT+3.5*DOWN), np.array(0.26*RIGHT+3.5*DOWN))
+        xtext = TexMobject(r'x')
+        xtext.next_to(xarrow, UP)
+        xtext.scale(1.25)
+        xgroup = VGroup(xrefline, xcenterline, xarrow, xtext)
+        
+        Farrow = Arrow(np.array(2.26*RIGHT+1*DOWN), np.array(5*RIGHT+1*DOWN), stroke_color=NEON_GREEN)
+        Ftext = TexMobject(r'u')
+        Ftext.next_to(Farrow, UP)
+        Ftext.scale(1.5)
+        Fgroup = VGroup(Farrow, Ftext)
+        
+        
+        self.add(sys, ground, t1group, t2group, xgroup, Fgroup, vargroup)
+        self.wait(0.5)
+        
+        l2factor = 0.9
+        m2factor = 1
+        m1density = 1/(PI*m2radius**2)
+        r2 = np.sqrt(m2factor/(m1density*PI))
+        m2scale = r2/m2radius
+        t1f = 2.5 
+        t2f = 2.5
+        t1rot2ic = t1f*PI/180 - t1
+        t2rot2ic = t2 - t2f*PI/180
+        
+        l2reltext = TexMobject(str(round(l2factor,1)), r'l_1')
+        l2reltext.move_to(l2text_2)
+        l2reltext.shift(0.3*RIGHT)
+        if m2factor == 1:
+            m2reltext = TexMobject(r'm_1')
+        else:
+            m2reltext = TexMobject(str(round(m2factor,1)), r'm_1')
+        
+        # Change the length
+        self.play(ReplacementTransform(l2text_2, l2reltext))
+        self.play(rod2.stretch_about_point, l2factor, [1,0,0], rod2.points[0],
+                  t2arc.stretch_about_point, l2factor, [1,0,0], rod2.points[0],
+                  t2text.stretch_about_point, l2factor, [1,0,0], rod2.points[0],
+#                  l2reltext.stretch_about_point, l2factor, [1,0,0], rod2.points[0],
+                  MaintainPositionRelativeTo(l2reltext, rod2),
+                  m2.shift,-(1-l2factor)*l2*er2,
+                  MaintainPositionRelativeTo(m2text_2,m2))
+        self.wait(0.5)
+        
+        # Change mass
+        m2reltext.move_to(m2text_2)
+        self.play(ReplacementTransform(m2text_2, m2reltext))
+#        self.play(m2.scale, 1.5)
+        
+        # Change angles
+        t1ic = TexMobject(r'\theta_1(0)', r'=', str(t1f), r'^{\circ}')
+        t2ic = TexMobject(r'\theta_2(0)', r'=', str(t2f), r'^{\circ}')
+        t1ic.next_to(xrefline, RIGHT)
+        t1ic.set_y(1)
+        t2ic.next_to(t1ic, DOWN)
+        t2ic.align_to(t1ic, LEFT)
+        
+        self.play(ReplacementTransform(t1text, t1ic), ReplacementTransform(t2text, t2ic),
+                  FadeOut(t1arc), FadeOut(t2arc))
+        self.wait(0.5)
+        self.play(Rotate(p1, t1rot2ic, OUT, about_point=rod1.points[0]),
+                  Rotate(p2, t2rot2ic, OUT, about_point=rod2.points[0]),
+                  MaintainPositionRelativeTo(m2reltext, m2),
+                  MaintainPositionRelativeTo(m1text_2, m1),
+                  MaintainPositionRelativeTo(l1text_2, rod1),
+                  MaintainPositionRelativeTo(l2reltext, rod2),)
+        self.wait(1)
+        
+        l1val = TexMobject(r'l_1 = 2 m')
+        m1val = TexMobject(r'm_1 = 0.1 kg')
+        Mval = TexMobject(r'M = 1 kg')
+        Mval.next_to(t1ic, UP)
+        l1val.next_to(Mval, UP)
+        m1val.next_to(l1val, UP)
+        Mval.align_to(t1ic, LEFT)
+        m1val.align_to(t1ic, LEFT)
+        l1val.align_to(t1ic, LEFT)
+        self.play(TransformFromCopy(Mtext, Mval),
+                  TransformFromCopy(m1text_2, m1val),
+                  TransformFromCopy(l1text_2, l1val))
+        
         self.wait(2)
         
-    
-    
+        # Next condition
+        
+        
+        
     def getPos(self, obj):
         objpos = [obj.get_x(), obj.get_y(), obj.get_z()]
         return objpos
@@ -907,12 +1080,6 @@ class CartDemo(Scene):
         # generate the vector to move an object to a new position
         return pos+self.getPos(obj)
     
-    def rotatePend(self, obj, angle):
-        pass
-    
-    def moveSys(self, sys, x):
-        
-        return ApplyMethod(sys.move_to, self.relVec(sys, x))
     
 #    class Pendulum(Circle, Line, radius, length, mass, angle, position):
 #        CONFIG = {
