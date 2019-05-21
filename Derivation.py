@@ -147,7 +147,6 @@ m1n = 0.1
 m2n = 0.1
 Mn  = 1 # kg
 gn  = 10 # m/s^2
-dpinum = 300
 # Initial conditions for initial response
 t10 = 2.5 # Initial angle in degrees
 dt10 = 0
@@ -256,29 +255,11 @@ ax1.legend(loc='best')
 # Animations
 ###
 fileloc = 'media/plots/'
+dpinum = 200
+fpsnum = 200
+codecname = 'libx264'
+bitratenum = 1000
 
-
-def align_yaxis(ax1, v1, ax2, v2):
-    """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
-    _, y1 = ax1.transData.transform((0, v1))
-    _, y2 = ax2.transData.transform((0, v2))
-    adjust_yaxis(ax2,(y1-y2)/2,v2)
-    adjust_yaxis(ax1,(y2-y1)/2,v1)
-
-def adjust_yaxis(ax,ydif,v):
-    """shift axis ax by ydiff, maintaining point v at the same location"""
-    inv = ax.transData.inverted()
-    _, dy = inv.transform((0, 0)) - inv.transform((0, ydif))
-    miny, maxy = ax.get_ylim()
-    miny, maxy = miny - v, maxy - v
-    if -miny>maxy or (-miny==maxy and dy > 0):
-        nminy = miny
-        nmaxy = miny*(maxy+dy)/(miny+dy)
-    else:
-        nmaxy = maxy
-        nminy = maxy*(miny+dy)/(maxy+dy)
-    ax.set_ylim(nminy+v, nmaxy+v)
-    
 def align_yaxis_np(ax1, ax2):
     """Align zeros of the two axes, zooming them out by same ratio"""
     axes = np.array([ax1, ax2])
@@ -333,9 +314,9 @@ def updateic(num, tic, xic, xicline):
     xicline.set_data(tic[:num], xic[:num])
     xicline.axes.axis(ax3Rlims)
     return xicline,
-ani = animation.FuncAnimation(fig3, updateic, len(tic), fargs=[tic, xic, xicline],
+ani3 = animation.FuncAnimation(fig3, updateic, len(tic), fargs=[tic, xic, xicline],
                               interval=5, blit=True)
-ani.save(fileloc+'initial_response_wx_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
+ani3.save(fileloc+'initial_response_wx_' + filecondition + '.mp4', bitrate=bitratenum, writer='ffmpeg', fps=fpsnum, codec=codecname, dpi=dpinum)
 
 ##
 # Initial condition response w/o x
@@ -360,9 +341,9 @@ def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
     t1icline.axes.axis(iclims)
     return t1icline, t2icline,
 
-ani = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
+ani2 = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
                               interval=5, blit=True)
-ani.save(fileloc+'initial_response_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
+ani2.save(fileloc+'initial_response_' + filecondition + '.mp4', bitrate=bitratenum, writer='ffmpeg', fps=fpsnum, codec=codecname, dpi=dpinum)
 
 
 ##
@@ -402,10 +383,10 @@ ani.save(fileloc+'initial_response_' + filecondition + '.mp4', writer='ffmpeg', 
 #    ximpulseline.set_data(timpulse[:num], ximpulse[:num])
 #    ximpulseline.axes.axis(ax5Rlims)
 #    return ximpulseline,
-#ani = animation.FuncAnimation(fig5, updateimpulse, len(tic), fargs=[timpulse, ximpulse, ximpulseline],
+#ani5 = animation.FuncAnimation(fig5, updateimpulse, len(tic), fargs=[timpulse, ximpulse, ximpulseline],
 #                              interval=5, blit=True)
 #
-#ani.save(fileloc+'impulse_response_wx_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
+#ani5.save(fileloc+'impulse_response_wx_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
 #
 ###
 ## Impulse response w/o x
@@ -428,10 +409,10 @@ ani.save(fileloc+'initial_response_' + filecondition + '.mp4', writer='ffmpeg', 
 #    t2impulseline.set_data(timpulse[:num], t2impulse[:num])
 #    t1impulseline.axes.axis(impulselims)
 #    return t1impulseline, t2impulseline,
-#ani = animation.FuncAnimation(fig4, updateic, len(tic), fargs=[timpulse, t1impulse, t2impulse, t1impulseline, t2impulseline],
+#ani4 = animation.FuncAnimation(fig4, updateic, len(tic), fargs=[timpulse, t1impulse, t2impulse, t1impulseline, t2impulseline],
 #                              interval=5, blit=True)
 #
-#ani.save(fileloc+'impulse_response_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
+#ani4.save(fileloc+'impulse_response_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
 
 
 
