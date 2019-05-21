@@ -569,7 +569,7 @@ class CartDemo(Scene):
         et2 = np.cos(t2)*RIGHT-np.sin(t2)*UP
         
         # Cart properties
-        r_M_O = [0, -2] # Position of cart wrt the origin
+        r_M_O = [0, -1] # Position of cart wrt the origin
         d_M = [0.75, 5] # Cart height, width
         
         # Wheel properties
@@ -578,7 +578,7 @@ class CartDemo(Scene):
         r_w2_O = [3*wheelradius+r_M_O[0], -0.25*d_M[0]-wheelradius+r_M_O[1]]
         
         # Ground properties
-        r_G = [0,-0.5*d_M[0]-2*wheelradius-r_M_O[1]]
+        r_G = [0,-0.5*d_M[0]-1.64*wheelradius+r_M_O[1],0]
         
         # Position of hinges
         r_C1_O = [r_M_O[0]-0.25*d_M[1], r_M_O[1]+0.5*d_M[0], 0]
@@ -618,7 +618,9 @@ class CartDemo(Scene):
         m2 = Circle(radius=m2radius, fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
         m2.shift(r_m2_O[0]*RIGHT+r_m2_O[1]*UP)
         
-        # Relative 
+        # text 
+        Mtext = TexMobject(r'M')
+        Mtext.move_to(M)
         
         m1text_1 = TexMobject(r'm')
         m1text_1.next_to(m1, UP)
@@ -633,20 +635,24 @@ class CartDemo(Scene):
         l2text_1.shift(0.75*LEFT)
         
         
+        
+        
         # Create groups to move together
         cart = VGroup(M, w1, w2)
         
-        p1 = VGroup(m1, rod1, m1text_1, l1text_1)
-        p2 = VGroup(m2, rod2, m2text_1, l2text_1)
+        p1 = VGroup(m1, rod1)
+        p2 = VGroup(m2, rod2)
         sys = VGroup(cart, p1, p2)
         
         # Add elements to scene
-        self.play(DrawBorderThenFill(cart))
+        # Create ground
+        ground = Line(np.array(r_G+6*LEFT), np.array(r_G+6*RIGHT))
+        self.play(Write(ground),run_time=0.3)
+        self.play(DrawBorderThenFill(cart),Write(Mtext))
         self.wait(1)
         self.play(DrawBorderThenFill(m1), DrawBorderThenFill(rod1),
-                  DrawBorderThenFill(m2), DrawBorderThenFill(rod2))
+                  DrawBorderThenFill(m2), DrawBorderThenFill(rod2),run_time=0.7)
         self.wait(1)
-        
         
         self.play(Write(m1text_1), Write(m2text_1))
         self.play(Write(l1text_1), Write(l2text_1))
@@ -685,7 +691,7 @@ class CartDemo(Scene):
         
         # x
         xrefline = DashedLine(np.array(6*LEFT+4*DOWN), np.array(6*LEFT+4*UP), stroke_color=WHITE)
-        xcenterline = DashedLine(np.array(2*DOWN), np.array(5*DOWN), stroke_color=WHITE)
+        xcenterline = DashedLine(np.array(1*DOWN), np.array(5*DOWN), stroke_color=WHITE)
         xarrow = Arrow(np.array(6.23*LEFT+3.5*DOWN), np.array(0.26*RIGHT+3.5*DOWN))
         xtext = TexMobject(r'x')
         xtext.next_to(xarrow, UP)
@@ -697,8 +703,22 @@ class CartDemo(Scene):
         
         self.wait(0.5)
         
-        # Force F
-        Farrow = Arrow(np.array(2.26*RIGHT+2*DOWN), np.array(5*RIGHT+2*DOWN), stroke_color=NEON_GREEN)
+        # Gravity
+        g1arrow = Arrow(np.array(r_m1_O), np.array(r_m1_O+2*DOWN), stroke_color=NEON_GREEN)
+        g1text = TexMobject(r'g')
+        g1text.next_to(g1arrow, LEFT)
+        g1text.scale(1.5)
+        g2arrow = Arrow(np.array(r_m2_O), np.array(r_m2_O+2*DOWN), stroke_color=NEON_GREEN)
+        g2text = TexMobject(r'g')
+        g2text.next_to(g2arrow, RIGHT)
+        g2text.scale(1.5)
+        self.play(Write(g1arrow), Write(g1text),
+                  Write(g2arrow), Write(g2text))
+        self.wait(1)
+        
+        
+        # Applied force F
+        Farrow = Arrow(np.array(2.26*RIGHT+1*DOWN), np.array(5*RIGHT+1*DOWN), stroke_color=NEON_GREEN)
         Ftext = TexMobject(r'F')
         Ftext.next_to(Farrow, UP)
         Ftext.scale(1.5)
@@ -708,30 +728,81 @@ class CartDemo(Scene):
         utext.move_to(Ftext)
         utext.scale(1.5)
         self.play(Transform(Ftext, utext))
-        self.wait(1)
+        self.wait(2)
+        
+        
         
         # Fade things to prepare to move stuff
         self.play(FadeOut(xrefline), FadeOut(xtext), FadeOut(xcenterline), FadeOut(xarrow),
                   FadeOut(t1refline), FadeOut(t1arc), FadeOut(t1text), 
                   FadeOut(t2refline), FadeOut(t2arc), FadeOut(t2text), 
-                  FadeOut(Farrow), FadeOut(utext))
-        
-        # Demonstrate positional movement
-        
-#        self.play(Rotate(p1, PI/8, OUT, about_point=rod1.points[0]),
-#                  Rotate(p2, PI/8, OUT, about_point=rod2.points[0]))
+                  FadeOut(Farrow), FadeOut(Ftext), 
+                  FadeOut(g1arrow), FadeOut(g1text),
+                  FadeOut(g2arrow), FadeOut(g2text),
+                  FadeOut(l1text_1), FadeOut(l2text_1), 
+                  FadeOut(m1text_1), FadeOut(m2text_1),
+                  FadeOut(Mtext))
 
         
         
+        # Demonstrate positional movement       
+        self.play(cart.shift, 1*RIGHT,
+                  MaintainPositionRelativeTo(p1, cart),
+                  MaintainPositionRelativeTo(p2, cart))
+        self.play(cart.shift, 2*LEFT,
+                  MaintainPositionRelativeTo(p1, cart),
+                  MaintainPositionRelativeTo(p2, cart))
+        self.play(cart.shift, 1*RIGHT,
+                  MaintainPositionRelativeTo(p1, cart),
+                  MaintainPositionRelativeTo(p2, cart))
+        
+        self.wait(1)        
+        self.play(Rotate(p1, t1/2, OUT, about_point=rod1.points[0]),
+                  Rotate(p2, t1/2, OUT, about_point=rod2.points[0]))
+        self.play(Rotate(p1, -t1/2, OUT, about_point=rod1.points[0]),
+                  Rotate(p2, -t1/2, OUT, about_point=rod2.points[0]))
+        
+        self.wait(0.5)
+        self.play(Rotate(p1, t1, OUT, about_point=rod1.points[0]),
+                  Rotate(p2, t1, OUT, about_point=rod2.points[0]))
+        self.wait(0.5)
+        self.play(Rotate(p1, -2*t1, OUT, about_point=rod1.points[0]),
+                  Rotate(p2, -2*t1, OUT, about_point=rod2.points[0]))
+        self.wait(0.5)
+        self.play(Rotate(p1, t1, OUT, about_point=rod1.points[0]),
+                  Rotate(p2, t1, OUT, about_point=rod2.points[0]))
+        self.play(FadeIn(l1text_1), FadeIn(l2text_1),
+                  FadeIn(m1text_1), FadeIn(m2text_1))
+        
         m1text_2 = TexMobject(r'm_1')
-        m1text_2.next_to(m1, UP)
+        m1text_2.move_to(m1text_1)
         m2text_2 = TexMobject(r'm_2')
-        m2text_2.next_to(m2, UP)
+        m2text_2.move_to(m2text_1)
         
         l1text_2 = TexMobject(r'l_1')
-        l1text_2.next_to(m1, LEFT)
+        l1text_2.move_to(l1text_1)
         l2text_2 = TexMobject(r'l_2')
-        l2text_2.next_to(rod2, RIGHT)
+        l2text_2.move_to(l2text_1)
+        
+        self.wait(0.5)
+        self.play(Transform(m1text_1, m1text_2),
+                  Transform(m2text_1, m2text_2),
+                  Transform(l1text_1, l1text_2),
+                  Transform(l2text_1, l2text_2))
+        self.wait(0.5)
+        self.play(m1.scale, 2,
+                  m1text_1.shift, 0.2*UP)
+        self.wait(0.5)
+        self.play(rod2.stretch_about_point, 0.75, [1,0,0], rod2.points[0],
+                  MaintainPositionRelativeTo(l2text_1, rod2),
+                  m2.shift,-0.25*l2*er2,
+                  MaintainPositionRelativeTo(m2text_1,m2))
+        self.wait(0.5)
+        self.play(FadeIn(xrefline), FadeIn(xtext), FadeIn(xcenterline), FadeIn(xarrow),
+                  FadeIn(t1refline), FadeIn(t1arc), FadeIn(t1text), 
+                  FadeIn(t2refline), FadeIn(t2arc), FadeIn(t2text), 
+                  FadeIn(Farrow), FadeIn(Ftext),
+                  FadeIn(Mtext))
         
         self.wait(3)
         
