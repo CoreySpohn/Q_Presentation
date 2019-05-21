@@ -142,13 +142,13 @@ l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
 l1n = 2 # 
-l2n = 1.8
+l2n = 1
 m1n = 0.1
 m2n = 0.1
 Mn  = 1 # kg
 gn  = 10 # m/s^2
 # Initial conditions for initial response
-t10 = 2.5 # Initial angle in degrees
+t10 = -2.5 # Initial angle in degrees
 dt10 = 0
 t20 = 2.5
 dt20 = 0
@@ -316,7 +316,7 @@ def updateic(num, tic, xic, xicline):
     return xicline,
 ani3 = animation.FuncAnimation(fig3, updateic, len(tic), fargs=[tic, xic, xicline],
                               interval=5, blit=True)
-ani3.save(fileloc+'initial_response_wx_' + filecondition + '.mp4', bitrate=bitratenum, writer='ffmpeg', fps=fpsnum, codec=codecname, dpi=dpinum)
+ani3.save(fileloc+'initial_response_wx_' + filecondition + '.mp4', writer='ffmpeg', dpi=dpinum, extra_args=['-pix_fmt', 'yuv420p'])
 
 ##
 # Initial condition response w/o x
@@ -343,7 +343,7 @@ def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
 
 ani2 = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
                               interval=5, blit=True)
-ani2.save(fileloc+'initial_response_' + filecondition + '.mp4', bitrate=bitratenum, writer='ffmpeg', fps=fpsnum, codec=codecname, dpi=dpinum)
+ani2.save(fileloc+'initial_response_' + filecondition + '.mp4', writer='ffmpeg', dpi=dpinum, extra_args=['-pix_fmt', 'yuv420p'])
 
 
 ##
