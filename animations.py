@@ -18,63 +18,82 @@ class ControllabilityMatrix(Scene):
 class Dynamics(Scene):
     def construct(self):
         self.energy2L()
-        self.l2EOM()
+#        self.l2EOM()
         
     def energy2L(self):
         # Kinetic Energy
-        Teq = TexMobject(r"KE =")
-        Teq1 = TexMobject(r"0.5 M \dot{x}^{2} + 0.5 m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)")
-        Teq2 = TexMobject(r"+ 0.5 m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)")
-        Teq.shift(2*UP+6*LEFT)
-        Teq1.shift(2*UP)
-        Teq2.shift(2*UP)
-        Teq1.next_to(Teq, RIGHT)
-        Teq2.next_to(Teq1, DOWN)
-        Teq2.align_to(Teq1, LEFT)
-        KEgroup = VGroup(Teq, Teq1, Teq2)
+        Texpr = TexMobject(r'KE', '=', r'\sum \frac{1}{2} m_i \vec{v_i} \cdot \vec{v_i}')
+        Texpr.to_edge(UP)
+        self.play(Write(Texpr))
+        Teq = TexMobject(r'KE', '=', r'\frac{1}{2} M \dot{x}^{2}',
+                         r'+ \frac{1}{2} m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)',
+                         r'+ \frac{1}{2} m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)')
+#        Teq[2].shift(5*RIGHT)
         
+        Teq[2].center()
+        Teq[2].shift(3*LEFT)
+        Teq[1].next_to(Teq[2], LEFT)
+        Teq[0].next_to(Teq[1], LEFT)
+        Teq[3].next_to(Teq[2], DOWN)
+        Teq[3].align_to(Teq[2], LEFT)
+        Teq[4].next_to(Teq[3], DOWN)
+        Teq[4].align_to(Teq[3], LEFT)
+        
+        self.play(Write(Teq[0]),
+                  Write(Teq[1]),
+                  Write(Teq[2]))
+        self.wait(0.5)
+        self.play(Write(Teq[3]))
+        self.wait(0.5)
+        self.play(Write(Teq[4]))
+        self.wait(0.5)
+        self.play(FadeOutAndShift(Texpr, UP),
+                  Teq.to_edge, UP)
         # Potential Energy
-        Ueq = TexMobject(r"PE = g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
-        Ueq.next_to(Teq2, DOWN)
+        Uexpr = TexMobject(r'PE', '=', r'\sum g m_i h_i')
+        Uexpr.next_to(Teq, DOWN)
+        self.play(Write(Uexpr))
+        self.wait(0.5)
+        Ueq = TexMobject(r"PE =", r" g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
+        Ueq.move_to(Uexpr)
         Ueq.align_to(Teq, LEFT)
-
+        self.play(Transform(Uexpr, Ueq))
+        self.wait(0.5)
+        
         # Lagrangian symbolic
-        Leq1_1 = TexMobject(r"\mathcal{L} =")
-        Leq1_2 = TexMobject(r"KE - PE")
-        Leq1_1.next_to(Ueq, DOWN)
-        Leq1_1.align_to(Teq, RIGHT)
-        Leq1_2.next_to(Leq1_1, RIGHT)
-        Leq1group = VGroup(Leq1_1, Leq1_2)
+        Leq1 = TexMobject(r"\mathcal{L} =", r'KE - PE')
+        Leq1.next_to(Ueq, DOWN)
         
-        # Lagrangian full
-        Leq2 = TexMobject(r"\mathcal{L} =")
-        Leq2_1 = TexMobject(r"0.5 M \dot{x}^{2} + 0.5 m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)")
-        Leq2_2 = TexMobject(r"+ 0.5 m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)")
-        Leq2_3 = TexMobject(r"-g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
-        
-        Leq2.move_to(Leq1group)
-        Leq2.align_to(Leq1_1, LEFT)
-        Leq2_1.next_to(Leq2, RIGHT)
-        Leq2_2.next_to(Leq2_1, DOWN)
-        Leq2_3.next_to(Leq2_2, DOWN)
-        Leq2_2.align_to(Leq2_1, LEFT)
-        Leq2_3.align_to(Leq2_1, LEFT)
-        
-        Lgroup = VGroup(Leq2, Leq2_1, Leq2_2, Leq2_3)
-        
-        # Kinetic and Potential Animations
-        self.play(Write(KEgroup), Write(Ueq))
-        self.wait(0.5)
-        
-        # Lagrangian Animations
-        self.play(ApplyMethod(KEgroup.shift, 1*UP), ApplyMethod(Ueq.shift, 1*UP), FadeInFromDown(Leq1group))
-        self.wait(0.5)
-        self.play(ReplacementTransform(Leq1group, Lgroup))
-        self.wait(0.5)
-        
-        # Focus on Lagrangian
-        self.play(FadeOut(KEgroup), FadeOut(Ueq), ApplyMethod(Lgroup.center))
-        self.remove(Lgroup)
+#        
+#        # Lagrangian full
+#        Leq2 = TexMobject(r"\mathcal{L} =")
+#        Leq2_1 = TexMobject(r"0.5 M \dot{x}^{2} + 0.5 m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)")
+#        Leq2_2 = TexMobject(r"+ 0.5 m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)")
+#        Leq2_3 = TexMobject(r"-g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
+#        
+#        Leq2.move_to(Leq1group)
+#        Leq2.align_to(Leq1_1, LEFT)
+#        Leq2_1.next_to(Leq2, RIGHT)
+#        Leq2_2.next_to(Leq2_1, DOWN)
+#        Leq2_3.next_to(Leq2_2, DOWN)
+#        Leq2_2.align_to(Leq2_1, LEFT)
+#        Leq2_3.align_to(Leq2_1, LEFT)
+#        
+#        Lgroup = VGroup(Leq2, Leq2_1, Leq2_2, Leq2_3)
+#        
+#        # Kinetic and Potential Animations
+#        self.play(Write(KEgroup), Write(Ueq))
+#        self.wait(0.5)
+#        
+#        # Lagrangian Animations
+#        self.play(ApplyMethod(KEgroup.shift, 1*UP), ApplyMethod(Ueq.shift, 1*UP), FadeInFromDown(Leq1group))
+#        self.wait(0.5)
+#        self.play(ReplacementTransform(Leq1group, Lgroup))
+#        self.wait(0.5)
+#        
+#        # Focus on Lagrangian
+#        self.play(FadeOut(KEgroup), FadeOut(Ueq), ApplyMethod(Lgroup.center))
+#        self.remove(Lgroup)
         
     def l2EOM(self):
         # Lagrange equation 

@@ -200,7 +200,7 @@ filecondition = condition.replace('$','').replace('_', '').replace(',', '_').rep
 # Colors
 t1color = '#39ff14'
 t2color = '#4DA4B5'
-xcolor = '#fff700'
+xcolor = '#F9C80E'
 
 # Initial Response
 tcic, youtic, xoutic = control.initial_response(sysc, tspan, x0, return_x=True)
