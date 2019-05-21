@@ -18,7 +18,7 @@ class ControllabilityMatrix(Scene):
 class Dynamics(Scene):
     def construct(self):
         self.energy2L()
-#        self.l2EOM()
+        self.l2EOM()
         
     def energy2L(self):
         # Kinetic Energy
@@ -48,7 +48,8 @@ class Dynamics(Scene):
         self.play(Write(Teq[4]))
         self.wait(0.5)
         self.play(FadeOutAndShift(Texpr, UP),
-                  Teq.to_edge, UP)
+                  Teq.to_edge, UP,
+                  Teq.shift, 1*DOWN)
         # Potential Energy
         Uexpr = TexMobject(r'PE', '=', r'\sum g m_i h_i')
         Uexpr.next_to(Teq, DOWN)
@@ -57,69 +58,69 @@ class Dynamics(Scene):
         Ueq = TexMobject(r"PE =", r" g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
         Ueq.move_to(Uexpr)
         Ueq.align_to(Teq, LEFT)
-        self.play(Transform(Uexpr, Ueq))
+        self.play(ReplacementTransform(Uexpr, Ueq))
         self.wait(0.5)
         
         # Lagrangian symbolic
-        Leq1 = TexMobject(r"\mathcal{L} =", r'KE - PE')
-        Leq1.next_to(Ueq, DOWN)
+        Lexpr = TexMobject(r"\mathcal{L} =", r'KE - PE')
+        Lexpr.to_edge(UP)
+        self.play(Write(Lexpr))
+        self.wait(0.5)
+        # Lagrangian full
+        Leq = TexMobject(r"\mathcal{L} =",
+                         r"\frac{1}{2} M \dot{x}^{2} + \frac{1}{2} m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)",
+                         r"+ \frac{1}{2} m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)",
+                         r"-g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
         
-#        
-#        # Lagrangian full
-#        Leq2 = TexMobject(r"\mathcal{L} =")
-#        Leq2_1 = TexMobject(r"0.5 M \dot{x}^{2} + 0.5 m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)")
-#        Leq2_2 = TexMobject(r"+ 0.5 m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)")
-#        Leq2_3 = TexMobject(r"-g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
-#        
-#        Leq2.move_to(Leq1group)
-#        Leq2.align_to(Leq1_1, LEFT)
-#        Leq2_1.next_to(Leq2, RIGHT)
-#        Leq2_2.next_to(Leq2_1, DOWN)
-#        Leq2_3.next_to(Leq2_2, DOWN)
-#        Leq2_2.align_to(Leq2_1, LEFT)
-#        Leq2_3.align_to(Leq2_1, LEFT)
-#        
-#        Lgroup = VGroup(Leq2, Leq2_1, Leq2_2, Leq2_3)
-#        
-#        # Kinetic and Potential Animations
-#        self.play(Write(KEgroup), Write(Ueq))
-#        self.wait(0.5)
-#        
-#        # Lagrangian Animations
-#        self.play(ApplyMethod(KEgroup.shift, 1*UP), ApplyMethod(Ueq.shift, 1*UP), FadeInFromDown(Leq1group))
-#        self.wait(0.5)
-#        self.play(ReplacementTransform(Leq1group, Lgroup))
-#        self.wait(0.5)
-#        
-#        # Focus on Lagrangian
-#        self.play(FadeOut(KEgroup), FadeOut(Ueq), ApplyMethod(Lgroup.center))
-#        self.remove(Lgroup)
+        Leq[0].move_to(Lexpr)
+        Leq[0].align_to(Teq[0], LEFT)
+        Leq[1].next_to(Leq[0], RIGHT)
+        Leq[2].next_to(Leq[1], DOWN)
+        Leq[2].align_to(Leq[1], LEFT)
+        Leq[3].next_to(Leq[2], DOWN)
+        Leq[3].align_to(Leq[2], LEFT)
+        Leq.center()
+        Leq.to_edge(UP)
+        
+        self.play(ReplacementTransform(Lexpr, Leq[0]))
+        self.wait(0.5)
+        self.play(ReplacementTransform(Teq[3], Leq[1]),
+                  ReplacementTransform(Teq[4], Leq[2]),
+                  FadeOut(Teq[2]),
+                  FadeOut(Teq[0]),
+                  FadeOut(Teq[1]))
+        self.wait(0.5)
+        self.play(ReplacementTransform(Ueq, Leq[3]))
+        
+#        self.remove(Ueq)
+        self.wait(0.5)
+        self.remove(Leq, Teq, Texpr, Ueq, Lexpr, Uexpr, Leq[0], Leq[3], Leq[1], Leq[2])
         
     def l2EOM(self):
         # Lagrange equation 
-        Leq2 = TexMobject(r"\mathcal{L} =")
-        Leq2_1 = TexMobject(r"0.5 M \dot{x}^{2} + 0.5 m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)")
-        Leq2_2 = TexMobject(r"+ 0.5 m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)")
-        Leq2_3 = TexMobject(r"-g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
+        Leq = TexMobject(r"\mathcal{L} =",
+                         r"\frac{1}{2} M \dot{x}^{2} + \frac{1}{2} m_{1} \left(l_{1}^{2} \dot{\theta}_{1}^{2} - 2 l_{1} \operatorname{cos}\left(\theta_{1}\right) \dot{\theta}_{1} \dot{x} + \dot{x}^{2}\right)",
+                         r"+ \frac{1}{2} m_{2} \left(l_{2}^{2} \dot{\theta}_{2}^{2} + 2 l_{2} \operatorname{cos}\left(\theta_{2}\right) \dot{\theta}_{2} \dot{x} + \dot{x}^{2}\right)",
+                         r"-g \left(l_{1} m_{1} \operatorname{cos}\left(\theta_{1}\right) + l_{2} m_{2} \operatorname{cos}\left(\theta_{2}\right)\right)")
         
-        Leq2_1.next_to(Leq2, RIGHT)
-        Leq2_2.next_to(Leq2_1, DOWN)
-        Leq2_3.next_to(Leq2_2, DOWN)
-        Leq2_2.align_to(Leq2_1, LEFT)
-        Leq2_3.align_to(Leq2_1, LEFT)
-        
-        Lgroup = VGroup(Leq2, Leq2_1, Leq2_2, Leq2_3)
-        Lgroup.center()
-        self.play(Lgroup.to_edge, UP)
-        
+
+        Leq[1].next_to(Leq[0], RIGHT)
+        Leq[2].next_to(Leq[1], DOWN)
+        Leq[2].align_to(Leq[1], LEFT)
+        Leq[3].next_to(Leq[2], DOWN)
+        Leq[3].align_to(Leq[2], LEFT)
+        Leq.center()
+        Leq.to_edge(UP)
+        self.add(Leq)
         # The Lagrange equations of motion
         Leq3 = TexMobject(r" \frac{d}{dt}\left(\frac{\partial \mathcal{L}}{\partial \dot{q}}\right) -\frac{\partial \mathcal{L}}{\partial q} = \sum \frac{\partial \vec{r}}{\partial q} \cdot \vec{F}")
-        Leq3.next_to(Lgroup, DOWN)
+        Leq3.next_to(Leq, DOWN)
         self.play(Write(Leq3))
         # Scale and move
-        self.play(ApplyMethod(Lgroup.scale,0.75), ApplyMethod(Leq3.scale,0.75))
-        self.play(ApplyMethod(Lgroup.to_corner,UP+LEFT))
-        self.play(Leq3.next_to,Lgroup,RIGHT)
+        self.play(Leq.scale,0.75,
+                  Leq.to_corner,UP+LEFT,
+                  Leq3.scale,0.75,
+                  Leq3.to_corner,UP+RIGHT)
         self.wait(1)
         
         # Generalized coordinates
@@ -128,7 +129,7 @@ class Dynamics(Scene):
         qt1 = TexMobject(r"q=\theta_1 :")
         qt2 = TexMobject(r"q=\theta_2 :")
         
-        qall.next_to(Lgroup,DOWN)
+        qall.next_to(Leq,DOWN)
         qall.set_x(0)
         
         qx.to_edge(LEFT)
@@ -152,65 +153,76 @@ class Dynamics(Scene):
         t2eq.next_to(qt2, RIGHT)
         
         self.play(Write(qall))
-        self.wait(1)
-        self.play(TransformFromCopy(qall, qx), TransformFromCopy(qall, qt1), TransformFromCopy(qall, qt2))
-        self.wait(1)
-        
-        self.play(Write(xeq), Write(t1eq), Write(t2eq))
-        self.wait(1)
+        self.wait(0.5)
+        self.play(TransformFromCopy(qall, qx))
+        self.wait(0.5)
+        self.play(Write(xeq))
+        self.wait(0.5)
+        self.play(TransformFromCopy(qall, qt1))
+        self.wait(0.5)
+        self.play(Write(t1eq))
+        self.wait(0.5)
+        self.play(TransformFromCopy(qall, qt2))
+        self.wait(0.5)
+        self.play(Write(t2eq))
+        self.wait(0.5)
         
         
         
         # Equations of motion
-#        xdd = TexMobject(r"\ddot{x} = \frac{0.5 g m_{1} \operatorname{sin}\left(2\theta_{1}\right) - 0.5 g m_{2} \operatorname{sin}\left(2\theta_{2}\right) - l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u}{M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)}")
-#        xdd.scale(0.45)
-        xddLHS = TexMobject(r"\ddot{x} = ")
-        xddRHS = TexMobject(r"\frac{0.5 g m_{1} \operatorname{sin}\left(2\theta_{1}\right) - 0.5 g m_{2} \operatorname{sin}\left(2\theta_{2}\right) - l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u}{M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)}")
-        xddRHS.scale(0.45)
-        xddLHS.next_to(qx, RIGHT)
-        xddRHS.next_to(xddLHS, RIGHT)
-        xdd = VGroup(xddLHS, xddRHS)
-        xdd.set_x(0)
+
+        xdd = TexMobject(r"\ddot{x} = ", 
+                         r"\frac{0.5 g m_{1} \operatorname{sin}\left(2\theta_{1}\right) - 0.5 g m_{2} \operatorname{sin}\left(2\theta_{2}\right) - l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u}{M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)}")
+
+        t1dd = TexMobject(r"\ddot{\theta_1} =",
+                         r"\frac{- 0.25 g m_{2} \left(- \operatorname{sin}\left(\theta_{1} - 2 \theta_{2}\right) + \operatorname{sin}\left(\theta_{1} + 2 \theta_{2}\right)\right) + g \left(M + m_{1} + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)\right) \operatorname{sin}\left(\theta_{1}\right) + \left(- l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u\right) \operatorname{cos}\left(\theta_{1}\right)}{l_{1} \left(M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)\right)}")
+
+        t2dd = TexMobject(r"\ddot{\theta_2} =",
+                         r"\frac{- 0.25 g m_{1} \left(\operatorname{sin}\left(2 \theta_{1} - \theta_{2}\right) + \operatorname{sin}\left(2 \theta_{1} + \theta_{2}\right)\right) + g \left(M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2}\right) \operatorname{sin}\left(\theta_{2}\right) - \left(- l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u\right) \operatorname{cos}\left(\theta_{2}\right)}{l_{2} \left(M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)\right)}")
         
-        t1ddLHS = TexMobject(r"\ddot{\theta_1} =")
-        t1ddRHS = TexMobject(r"\frac{- 0.25 g m_{2} \left(- \operatorname{sin}\left(\theta_{1} - 2 \theta_{2}\right) + \operatorname{sin}\left(\theta_{1} + 2 \theta_{2}\right)\right) + g \left(M + m_{1} + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)\right) \operatorname{sin}\left(\theta_{1}\right) + \left(- l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u\right) \operatorname{cos}\left(\theta_{1}\right)}{l_{1} \left(M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)\right)}")
-        t1ddRHS.scale(0.45)
-        t1ddLHS.next_to(qt1, RIGHT)
-        t1ddRHS.next_to(t1ddLHS,RIGHT)
-        t1dd = VGroup(t1ddLHS, t1ddRHS)
-        t1dd.next_to(xdd, DOWN)
+        for var in [xdd, t1dd, t2dd]:
+            var[0].scale(1)
+            var[1].scale(0.4)
         
-        t2ddLHS = TexMobject(r"\ddot{\theta_2} =")
-        t2ddRHS = TexMobject(r"\frac{- 0.25 g m_{1} \left(\operatorname{sin}\left(2 \theta_{1} - \theta_{2}\right) + \operatorname{sin}\left(2 \theta_{1} + \theta_{2}\right)\right) + g \left(M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2}\right) \operatorname{sin}\left(\theta_{2}\right) - \left(- l_{1} m_{1} \operatorname{sin}\left(\theta_{1}\right) \dot{\theta}_{1}^{2} + l_{2} m_{2} \operatorname{sin}\left(\theta_{2}\right) \dot{\theta}_{2}^{2} + u\right) \operatorname{cos}\left(\theta_{2}\right)}{l_{2} \left(M + m_{1} \operatorname{sin}^{2}\left(\theta_{1}\right) + m_{2} \operatorname{sin}^{2}\left(\theta_{2}\right)\right)}")
-        t2ddRHS.scale(0.45)
-        t2ddLHS.next_to(qt2, RIGHT)
-        t2ddRHS.next_to(t2ddLHS,RIGHT)
-        t2dd = VGroup(t2ddLHS, t2ddRHS)
-        t2dd.next_to(t1dd, DOWN)
+        xdd[0].next_to(qx, RIGHT)
+        xdd[0].to_edge(LEFT)
+        xdd[1].next_to(xdd[0],RIGHT)
+        t1dd[0].next_to(xdd[0], DOWN)
+        t1dd[1].next_to(t1dd[0],RIGHT)
+        t1dd.shift(0.75*DOWN)
+        t2dd[0].next_to(t1dd[0], DOWN)
+        t2dd[1].next_to(t2dd[0],RIGHT)
+        t2dd.shift(0.75*DOWN)
         
-        self.play(FadeOutAndShift(qall,UP), FadeOutAndShift(qx, LEFT), FadeOutAndShift(qt1,LEFT), FadeOutAndShift(qt2,LEFT),
-                  ReplacementTransform(xeq,xdd), ReplacementTransform(t1eq,t1dd), ReplacementTransform(t2eq,t2dd))
-        self.wait(1)
+        self.play(FadeOutAndShift(qall,UP), FadeOutAndShift(qx, LEFT), FadeOutAndShift(qt1,LEFT), FadeOutAndShift(qt2,LEFT))
+        self.play(ReplacementTransform(xeq,xdd))
+        self.wait(0.5)
+        self.play(ReplacementTransform(t1eq,t1dd))
+        self.wait(0.5)
+        self.play(ReplacementTransform(t2eq,t2dd))
+        self.wait(0.5)
         
         # Linearize that stuff!
         
-        xddL = TexMobject(r"\ddot{x} = \frac{g m_{1} \theta_{1} - g m_{2} \theta_{2} + u}{M}")
-        
-        t1ddL  = TexMobject(r"\ddot{\theta_1} = \frac{- g m_{2} \theta_{2} + g \left(M + m_{1}\right) \theta_{1} + u}{M l_{1}}")
-        
-        t2ddL = TexMobject(r"\ddot{\theta_2} = \frac{- g m_{1} \theta_{1} + g \left(M + m_{2}\right) \theta_{2} - u}{M l_{2}}")
+        xddL = TexMobject(r"\ddot{x} =", r"\frac{g m_{1} \theta_{1} - g m_{2} \theta_{2} + u}{M}")
+        t1ddL  = TexMobject(r"\ddot{\theta_1} =", r"\frac{- g m_{2} \theta_{2} + g \left(M + m_{1}\right) \theta_{1} + u}{M l_{1}}")
+        t2ddL = TexMobject(r"\ddot{\theta_2} =", r"\frac{- g m_{1} \theta_{1} + g \left(M + m_{2}\right) \theta_{2} - u}{M l_{2}}")
         
         t1ddL.center
         t1ddL.shift(1*DOWN)
         xddL.next_to(t1ddL, UP)
         t2ddL.next_to(t1ddL, DOWN)
         
-        self.play(ReplacementTransform(xdd,xddL), ReplacementTransform(t1dd,t1ddL), ReplacementTransform(t2dd,t2ddL))
-        
+        self.play(ReplacementTransform(xdd,xddL))
+        self.play(ReplacementTransform(t1dd,t1ddL))
+        self.play(ReplacementTransform(t2dd,t2ddL))
+        self.wait(0.5)
         # Break point for the controls section
-        self.play(FadeOutAndShift(Lgroup, UP), FadeOutAndShift(Leq3, UP), ApplyMethod(xddL.to_edge, UP), MaintainPositionRelativeTo(t1ddL, xddL), MaintainPositionRelativeTo(t2ddL, xddL))
+        self.play(FadeOutAndShift(Leq, UP), FadeOutAndShift(Leq3, UP), 
+                  ApplyMethod(xddL.to_edge, UP), MaintainPositionRelativeTo(t1ddL, xddL),
+                  MaintainPositionRelativeTo(t2ddL, xddL))
         
-        self.wait(1)
+        self.wait(2)
 
 class Controls(Scene):
     def construct(self):
@@ -229,13 +241,8 @@ class Controls(Scene):
         t1ddL.next_to(xddL, DOWN)
         t2ddL.next_to(t1ddL, DOWN)
         
-        for var in [xddL, t1ddL, t2ddL]:
-            var[0].scale(1.75)
-        
         self.add(xddL, t1ddL, t2ddL)
-#        self.play(
-#                 xddL[0].scale, 2,
-#                 run_time=1,)
+
         self.play(
                 xddL.scale, 0.55,
                 xddL.to_corner, UP+LEFT,
@@ -540,6 +547,195 @@ class Controls(Scene):
         
 class CartDemo(Scene):
     def construct(self):
+        self.simpleMotion()
+        
+    def simpleMotion(self):
+        m1radius = 0.25
+        m2radius = 0.25
+        
+        # Lengths, should also add angle
+        l1 = 4
+        l2 = 4
+        
+        # Angles (rad)
+        t1 = PI/7 
+        t2 = PI/7 
+        
+        # Unit vectors
+        er1 = -np.sin(t1)*RIGHT+np.cos(t1)*UP
+        et1 = -np.cos(t1)*RIGHT-np.sin(t1)*UP
+        
+        er2 = np.sin(t2)*RIGHT+np.cos(t2)*UP
+        et2 = np.cos(t2)*RIGHT-np.sin(t2)*UP
+        
+        # Cart properties
+        r_M_O = [0, -2] # Position of cart wrt the origin
+        d_M = [0.75, 5] # Cart height, width
+        
+        # Wheel properties
+        wheelradius = 0.4
+        r_w1_O = [-3*wheelradius+r_M_O[0], -0.25*d_M[0]-wheelradius+r_M_O[1]]
+        r_w2_O = [3*wheelradius+r_M_O[0], -0.25*d_M[0]-wheelradius+r_M_O[1]]
+        
+        # Ground properties
+        r_G = [0,-0.5*d_M[0]-2*wheelradius-r_M_O[1]]
+        
+        # Position of hinges
+        r_C1_O = [r_M_O[0]-0.25*d_M[1], r_M_O[1]+0.5*d_M[0], 0]
+        r_C2_O = [r_M_O[0]+0.25*d_M[1], r_M_O[1]+0.5*d_M[0], 0]
+        
+        # Position of masses relative to their hinges
+        r_m1_C1 = l1*er1
+        r_m2_C2 = l2*er2
+        
+        # Position of masses relative to origin
+        r_m1_O = [r_m1_C1[0]+r_C1_O[0], r_m1_C1[1]+r_C1_O[1], 0]
+        r_m2_O = [r_m2_C2[0]+r_C2_O[0], r_m2_C2[1]+r_C2_O[1], 0]
+        
+        # Colors
+        NEON_GREEN = '#39ff14'
+        BLUE = '#4DA4B5'
+        PURPLE = '#B696D2'
+        MAROON = '#761648'
+        GREY_1 = '#444444'
+        
+        # Create and place shapes
+        rod1 = Line(np.array(r_C1_O), np.array(r_m1_O), stroke_color=GREY_1)
+        rod2 = Line(np.array(r_C2_O), np.array(r_m2_O), stroke_color=GREY_1)
+        
+        M = Rectangle(height=d_M[0], width=d_M[1], fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
+        M.shift(r_M_O[0]*RIGHT+r_M_O[1]*UP)
+        
+        w1 = Circle(radius=wheelradius, fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
+        w1.shift(r_w1_O[0]*RIGHT+r_w1_O[1]*UP)
+        
+        w2 = Circle(radius=wheelradius, fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
+        w2.shift(r_w2_O[0]*RIGHT+r_w2_O[1]*UP)
+        
+        m1 = Circle(radius=m1radius, fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
+        m1.shift(r_m1_O[0]*RIGHT+r_m1_O[1]*UP)
+        
+        m2 = Circle(radius=m2radius, fill_color=GREY_1, fill_opacity=1, stroke_color=NEON_GREEN)
+        m2.shift(r_m2_O[0]*RIGHT+r_m2_O[1]*UP)
+        
+        # Relative 
+        
+        m1text_1 = TexMobject(r'm')
+        m1text_1.next_to(m1, UP)
+        l1text_1 = TexMobject(r'l')
+        l1text_1.next_to(rod1, LEFT)
+        l1text_1.shift(0.75*RIGHT)
+        
+        m2text_1 = TexMobject(r'm')
+        m2text_1.next_to(m2, UP)
+        l2text_1 = TexMobject(r'l')
+        l2text_1.next_to(rod2, RIGHT)
+        l2text_1.shift(0.75*LEFT)
+        
+        
+        # Create groups to move together
+        cart = VGroup(M, w1, w2)
+        
+        p1 = VGroup(m1, rod1, m1text_1, l1text_1)
+        p2 = VGroup(m2, rod2, m2text_1, l2text_1)
+        sys = VGroup(cart, p1, p2)
+        
+        # Add elements to scene
+        self.play(DrawBorderThenFill(cart))
+        self.wait(1)
+        self.play(DrawBorderThenFill(m1), DrawBorderThenFill(rod1),
+                  DrawBorderThenFill(m2), DrawBorderThenFill(rod2))
+        self.wait(1)
+        
+        
+        self.play(Write(m1text_1), Write(m2text_1))
+        self.play(Write(l1text_1), Write(l2text_1))
+        
+        ##
+        # Angles and position x
+        ##
+        # theta1
+        t1refline = DashedLine(np.array(r_C1_O), np.array(r_C1_O+7*UP), stroke_color=WHITE)
+        t1arcpoint1 = r_C1_O + 0.5*l1*UP
+        t1arcpoint2 = r_C1_O + 0.5*l1*er1
+        t1arc = ArcBetweenPoints(t1arcpoint1, t1arcpoint2)
+        t1text = TexMobject(r'\theta_1')
+        t1text.next_to(t1arc, UP)
+        t1text.scale(1.25)
+        self.play(Write(t1refline),
+                  run_time=0.5)
+        self.play(Write(t1arc),
+                  run_time=0.5)
+        self.play(Write(t1text))
+        
+        # theta2
+        t2refline = DashedLine(np.array(r_C2_O), np.array(r_C2_O+7*UP), stroke_color=WHITE)
+        t2arcpoint1 = r_C2_O + 0.5*l2*UP
+        t2arcpoint2 = r_C2_O + 0.5*l2*er2
+        t2arc = ArcBetweenPoints(t2arcpoint2, t2arcpoint1)
+        t2text = TexMobject(r'\theta_2')
+        t2text.next_to(t2arc, UP)
+        t2text.scale(1.25)
+#        Line(np.array(r_C1_O), np.array(r_m1_O), stroke_color=GREY_1)
+        self.play(Write(t2refline),
+                  run_time=0.5)
+        self.play(Write(t2arc),
+                  run_time=0.5)
+        self.play(Write(t2text))
+        
+        # x
+        xrefline = DashedLine(np.array(6*LEFT+4*DOWN), np.array(6*LEFT+4*UP), stroke_color=WHITE)
+        xcenterline = DashedLine(np.array(2*DOWN), np.array(5*DOWN), stroke_color=WHITE)
+        xarrow = Arrow(np.array(6.23*LEFT+3.5*DOWN), np.array(0.26*RIGHT+3.5*DOWN))
+        xtext = TexMobject(r'x')
+        xtext.next_to(xarrow, UP)
+        xtext.scale(1.25)
+        self.play(Write(xrefline), Write(xcenterline), DrawBorderThenFill(xarrow),
+                  run_time=0.5)
+        self.play(Write(xtext),
+                  run_time=0.5)
+        
+        self.wait(0.5)
+        
+        # Force F
+        Farrow = Arrow(np.array(2.26*RIGHT+2*DOWN), np.array(5*RIGHT+2*DOWN), stroke_color=NEON_GREEN)
+        Ftext = TexMobject(r'F')
+        Ftext.next_to(Farrow, UP)
+        Ftext.scale(1.5)
+        self.play(Write(Farrow), Write(Ftext))
+        self.wait(0.5)
+        utext=TexMobject('u')
+        utext.move_to(Ftext)
+        utext.scale(1.5)
+        self.play(Transform(Ftext, utext))
+        self.wait(1)
+        
+        # Fade things to prepare to move stuff
+        self.play(FadeOut(xrefline), FadeOut(xtext), FadeOut(xcenterline), FadeOut(xarrow),
+                  FadeOut(t1refline), FadeOut(t1arc), FadeOut(t1text), 
+                  FadeOut(t2refline), FadeOut(t2arc), FadeOut(t2text), 
+                  FadeOut(Farrow), FadeOut(utext))
+        
+        # Demonstrate positional movement
+        
+#        self.play(Rotate(p1, PI/8, OUT, about_point=rod1.points[0]),
+#                  Rotate(p2, PI/8, OUT, about_point=rod2.points[0]))
+
+        
+        
+        m1text_2 = TexMobject(r'm_1')
+        m1text_2.next_to(m1, UP)
+        m2text_2 = TexMobject(r'm_2')
+        m2text_2.next_to(m2, UP)
+        
+        l1text_2 = TexMobject(r'l_1')
+        l1text_2.next_to(m1, LEFT)
+        l2text_2 = TexMobject(r'l_2')
+        l2text_2.next_to(rod2, RIGHT)
+        
+        self.wait(3)
+        
+    def firstAttempt(self):
         m1radius = 0.25
         m2radius = 0.25
         
@@ -630,6 +826,8 @@ class CartDemo(Scene):
 #        self.play(Rotate(p1, angle=PI/8, about_point=rod1.points[0]+OUT))
         self.wait(2)
         
+    
+    
     def getPos(self, obj):
         objpos = [obj.get_x(), obj.get_y(), obj.get_z()]
         return objpos
