@@ -142,13 +142,13 @@ l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
 l1n = 2 # 
-l2n = 1
+l2n = 1.8
 m1n = 0.1
 m2n = 0.1
 Mn  = 1 # kg
 gn  = 10 # m/s^2
 # Initial conditions for initial response
-t10 = -2.5 # Initial angle in degrees
+t10 = 2.5 # Initial angle in degrees
 dt10 = 0
 t20 = 2.5
 dt20 = 0
@@ -205,7 +205,7 @@ if m2m1ratio == 1:
 else:
     m2m1ratiostr = str(round(m2m1ratio,1))
     
-condition = '$l_2 = ' + l2l1ratiotr + 'l_2, m_1=' + m2m1ratiostr + 'm_2$'
+condition = '$l_2 = ' + l2l1ratiotr + 'l_1, m_1=' + m2m1ratiostr + 'm_2$'
 filecondition = condition.replace('$','').replace('_', '').replace(',', '_').replace(' ', '')
 
 # Colors
