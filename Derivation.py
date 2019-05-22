@@ -142,7 +142,7 @@ l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
 l1n = 2 # 
-l2n = 1.8
+l2n = 1
 m1n = 0.1
 m2n = 0.1
 Mn  = 1 # kg
@@ -310,13 +310,17 @@ ax3.set_title(ictitle)
 align_yaxis_np(ax3, ax3R)
 ax3Rlims = [ax3R.get_xlim()[0], ax3R.get_xlim()[1], ax3R.get_ylim()[0], ax3R.get_ylim()[1]]
 fig3.tight_layout()
-def updateic(num, tic, xic, xicline):
-    xicline.set_data(tic[:num], xic[:num])
-    xicline.axes.axis(ax3Rlims)
-    return xicline,
-ani3 = animation.FuncAnimation(fig3, updateic, len(tic), fargs=[tic, xic, xicline],
-                              interval=5, blit=True)
-ani3.save(fileloc+'initial_response_wx_' + filecondition + '.mp4', writer='ffmpeg', dpi=dpinum, extra_args=['-pix_fmt', 'yuv420p'])
+plt.show()
+fig3.savefig(fileloc+'initial_response_wx_' + filecondition+'.png', dpi=300)
+#def updateic(num, tic, xic, xicline):
+#    xicline.set_data(tic[:num], xic[:num])
+#    xicline.axes.axis(ax3Rlims)
+#    return xicline,
+#
+#
+#ani3 = animation.FuncAnimation(fig3, updateic, len(tic), fargs=[tic, xic, xicline],
+#                              interval=5, blit=True)
+#ani3.save(fileloc+'initial_response_wx_' + filecondition + '.mp4', writer='ffmpeg', dpi=dpinum, extra_args=['-pix_fmt', 'yuv420p'])
 
 ##
 # Initial condition response w/o x
@@ -335,75 +339,81 @@ iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax3.get_ylim()[0], ax3.get_ylim(
 ictitle = condition + r' Initial Response'
 ax2.set_title(ictitle)
 fig2.tight_layout()
-def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
-    t1icline.set_data(tic[:num], t1ic[:num])
-    t2icline.set_data(tic[:num], t2ic[:num])
-    t1icline.axes.axis(iclims)
-    return t1icline, t2icline,
 
-ani2 = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
-                              interval=5, blit=True)
-ani2.save(fileloc+'initial_response_' + filecondition + '.mp4', writer='ffmpeg', dpi=dpinum, extra_args=['-pix_fmt', 'yuv420p'])
+fig2.savefig(fileloc+'initial_response_' + filecondition+'.png', dpi=300)
+
+#def updateic(num, tic, t1ic, t2ic, t1icline, t2icline):
+#    t1icline.set_data(tic[:num], t1ic[:num])
+#    t2icline.set_data(tic[:num], t2ic[:num])
+#    t1icline.axes.axis(iclims)
+#    return t1icline, t2icline,
+#
+#ani2 = animation.FuncAnimation(fig2, updateic, len(tic), fargs=[tic, t1ic, t2ic, t1icline, t2icline],
+#                              interval=5, blit=True)
+#ani2.save(fileloc+'initial_response_' + filecondition + '.mp4', writer='ffmpeg', dpi=dpinum, extra_args=['-pix_fmt', 'yuv420p'])
 
 
 ##
 # Impulse response with x
 ##
-#ximpulse = xoutimpulse[0]
-#t1impulse = xoutimpulse[2]
-#t2impulse = xoutimpulse[4]
-#fig5, ax5 = plt.subplots()
-#ax5.set_xlabel(r'Time')
-#ax5.set_ylabel(r'$\theta$, degrees')
-#ax5.set_title(r'')
-#plt.rc('text', usetex=True)
-#t1impulseline, = ax5.plot(timpulse,xoutimpulse[2], label=r'$\theta_1$', color=t1color)
-#t2impulseline, = ax5.plot(timpulse,xoutimpulse[4], label=r'$\theta_2$', color=t2color)
-#ax5.legend(loc='upper right')
-#impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
-## x stuff
-#ax5R = ax5.twinx()
-#ax5R.yaxis.tick_right()
-#ax5R.yaxis.set_label_position('right')
-#ax5R.set_ylabel('Position, m')
-#ximpulseline, = ax5R.plot(timpulse, ximpulse, label = r'x', color=xcolor)
-#ax5Rlims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
-## legend
-#lines = [t1impulseline, t2impulseline, ximpulseline]
-#labels = [l.get_label() for l in lines]
-#ax5.legend(lines, labels, loc = 'upper right', prop={'size': 13})
-#impulsetitle = condition + r' Impulse Response'
-#ax5.set_title(impulsetitle)
-## align the zeros
-##align_yaxis(ax5, 0, ax5R, 0)
-#align_yaxis_np(ax5, ax5R)
-#ax5Rlims = [ax5R.get_xlim()[0], ax5R.get_xlim()[1], ax5R.get_ylim()[0], ax5R.get_ylim()[1]]
-#fig5.tight_layout()
+ximpulse = xoutimpulse[0]
+t1impulse = xoutimpulse[2]
+t2impulse = xoutimpulse[4]
+fig5, ax5 = plt.subplots()
+ax5.set_xlabel(r'Time')
+ax5.set_ylabel(r'$\theta$, degrees')
+ax5.set_title(r'')
+plt.rc('text', usetex=True)
+t1impulseline, = ax5.plot(timpulse,xoutimpulse[2], label=r'$\theta_1$', color=t1color)
+t2impulseline, = ax5.plot(timpulse,xoutimpulse[4], label=r'$\theta_2$', color=t2color)
+ax5.legend(loc='upper right')
+impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
+# x stuff
+ax5R = ax5.twinx()
+ax5R.yaxis.tick_right()
+ax5R.yaxis.set_label_position('right')
+ax5R.set_ylabel('Position, m')
+ximpulseline, = ax5R.plot(timpulse, ximpulse, label = r'x', color=xcolor)
+ax5Rlims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax1.get_ylim()[0], ax1.get_ylim()[1]]
+# legend
+lines = [t1impulseline, t2impulseline, ximpulseline]
+labels = [l.get_label() for l in lines]
+ax5.legend(lines, labels, loc = 'upper right', prop={'size': 13})
+impulsetitle = condition + r' Impulse Response'
+ax5.set_title(impulsetitle)
+# align the zeros
+#align_yaxis(ax5, 0, ax5R, 0)
+align_yaxis_np(ax5, ax5R)
+ax5Rlims = [ax5R.get_xlim()[0], ax5R.get_xlim()[1], ax5R.get_ylim()[0], ax5R.get_ylim()[1]]
+fig5.tight_layout()
+fig5.savefig(fileloc+'impulse_response_wx_' + filecondition + '.png', dpi=300)
 #def updateimpulse(num, timpulse, ximpulse, ximpulseline):
 #    ximpulseline.set_data(timpulse[:num], ximpulse[:num])
 #    ximpulseline.axes.axis(ax5Rlims)
 #    return ximpulseline,
+#
 #ani5 = animation.FuncAnimation(fig5, updateimpulse, len(tic), fargs=[timpulse, ximpulse, ximpulseline],
 #                              interval=5, blit=True)
 #
 #ani5.save(fileloc+'impulse_response_wx_' + filecondition + '.mp4', writer='ffmpeg', codec='h264', dpi=dpinum)
-#
-###
-## Impulse response w/o x
-###
-#t1impulse = xoutimpulse[2]
-#t2impulse = xoutimpulse[4]
-#fig4, ax4 = plt.subplots()
-#ax4.set_xlabel(r'Time')
-#ax4.set_ylabel(r'$\theta$, degrees')
-#plt.rc('text', usetex=True)
-#t1impulseline, = ax4.plot(tcic, t1impulse, label=r'$\theta_1$', color=t1color)
-#t2impulseline, = ax4.plot(tcic, t2impulse, label=r'$\theta_2$', color=t2color)
-#ax4.legend(loc='upper right', prop={'size': 13})
-#impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax5.get_ylim()[0], ax5.get_ylim()[1]]
-#impulsetitle = condition + r' Impulse Response'
-#ax4.set_title(impulsetitle)
-#fig4.tight_layout()
+
+##
+# Impulse response w/o x
+##
+t1impulse = xoutimpulse[2]
+t2impulse = xoutimpulse[4]
+fig4, ax4 = plt.subplots()
+ax4.set_xlabel(r'Time')
+ax4.set_ylabel(r'$\theta$, degrees')
+plt.rc('text', usetex=True)
+t1impulseline, = ax4.plot(tcic, t1impulse, label=r'$\theta_1$', color=t1color)
+t2impulseline, = ax4.plot(tcic, t2impulse, label=r'$\theta_2$', color=t2color)
+ax4.legend(loc='upper right', prop={'size': 13})
+impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax5.get_ylim()[0], ax5.get_ylim()[1]]
+impulsetitle = condition + r' Impulse Response'
+ax4.set_title(impulsetitle)
+fig4.tight_layout()
+fig4.savefig(fileloc+'impulse_response_' + filecondition + '.png', dpi=300)
 #def updateic(num, timpulse, t1impulse, t2impulse, t1impulseline, t2impulseline):
 #    t1impulseline.set_data(timpulse[:num], t1impulse[:num])
 #    t2impulseline.set_data(timpulse[:num], t2impulse[:num])
