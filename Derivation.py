@@ -142,7 +142,7 @@ l1stabcond = solve(Qc.det(),l1)[0]
 
 # Numerical values for the matrices
 l1n = 2 # 
-l2n = 1
+l2n = 1.8
 m1n = 0.1
 m2n = 0.1
 Mn  = 1 # kg
@@ -188,7 +188,7 @@ K, S, E = control.lqr(sys, Q, R)
 Ac = An-Bn*K
 
 x0 = [x10, dx10, t10, dt10, t20, dt20]
-tspan = np.linspace(0,10,1000)
+tspan = np.linspace(0,15,1000)
 
 sysc = control.ss(Ac,Bn,Cn,D) 
 
@@ -308,7 +308,9 @@ ax3.set_title(ictitle)
 # align the zeros
 #align_yaxis(ax3, 0, ax3R, 0)
 align_yaxis_np(ax3, ax3R)
+
 ax3Rlims = [ax3R.get_xlim()[0], ax3R.get_xlim()[1], ax3R.get_ylim()[0], ax3R.get_ylim()[1]]
+xicline.axes.axis(ax3Rlims)
 fig3.tight_layout()
 plt.show()
 fig3.savefig(fileloc+'initial_response_wx_' + filecondition+'.png', dpi=300)
@@ -336,6 +338,7 @@ t1icline, = ax2.plot(tcic,t1ic, label=r'$\theta_1$', color = '#39ff14')
 t2icline, = ax2.plot(tcic,t2ic, label=r'$\theta_2$', color = '#4DA4B5')
 ax2.legend(loc='upper right', prop={'size': 13})
 iclims = [ax0.get_xlim()[0], ax0.get_xlim()[1], ax3.get_ylim()[0], ax3.get_ylim()[1]]
+t1icline.axes.axis(iclims)
 ictitle = condition + r' Initial Response'
 ax2.set_title(ictitle)
 fig2.tight_layout()
@@ -385,6 +388,7 @@ ax5.set_title(impulsetitle)
 #align_yaxis(ax5, 0, ax5R, 0)
 align_yaxis_np(ax5, ax5R)
 ax5Rlims = [ax5R.get_xlim()[0], ax5R.get_xlim()[1], ax5R.get_ylim()[0], ax5R.get_ylim()[1]]
+ximpulseline.axes.axis(ax5Rlims)
 fig5.tight_layout()
 fig5.savefig(fileloc+'impulse_response_wx_' + filecondition + '.png', dpi=300)
 #def updateimpulse(num, timpulse, ximpulse, ximpulseline):
@@ -410,6 +414,7 @@ t1impulseline, = ax4.plot(tcic, t1impulse, label=r'$\theta_1$', color=t1color)
 t2impulseline, = ax4.plot(tcic, t2impulse, label=r'$\theta_2$', color=t2color)
 ax4.legend(loc='upper right', prop={'size': 13})
 impulselims = [ax1.get_xlim()[0], ax1.get_xlim()[1], ax5.get_ylim()[0], ax5.get_ylim()[1]]
+t1impulseline.axes.axis(impulselims)
 impulsetitle = condition + r' Impulse Response'
 ax4.set_title(impulsetitle)
 fig4.tight_layout()
